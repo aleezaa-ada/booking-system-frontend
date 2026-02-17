@@ -278,4 +278,18 @@ describe('LoginPage', () => {
       expect(submitButton).toHaveAttribute('type', 'submit');
     });
   });
+
+  describe('Navigation', () => {
+    it('displays link to registration page', () => {
+      renderWithProviders(<LoginPage />);
+      const registerLink = screen.getByRole('link', { name: /register here/i });
+      expect(registerLink).toBeInTheDocument();
+      expect(registerLink).toHaveAttribute('href', '/register');
+    });
+
+    it('shows message prompting users to register', () => {
+      renderWithProviders(<LoginPage />);
+      expect(screen.getByText(/don't have an account\?/i)).toBeInTheDocument();
+    });
+  });
 });
