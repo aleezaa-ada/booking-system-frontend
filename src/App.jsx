@@ -4,9 +4,11 @@ import { AuthProvider } from './context/AuthProvider';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ResourceListPage from './pages/ResourceListPage';
+import BookingsPage from './pages/BookingsPage.jsx';
+import BookingForm from './components/BookingForm';
 
 import PrivateRoute from './components/PrivateRoute';
-import ResourceListPage from "./pages/ResourceListPage.jsx";
 
 function App() {
     return (
@@ -17,7 +19,9 @@ function App() {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     {/* Protected routes, will redirect to login page if not logged in*/}
-                    <Route path="/bookings" element={<PrivateRoute><p>My Bookings Page </p></PrivateRoute>} />
+                    <Route path="/bookings" element={<PrivateRoute><BookingsPage /></PrivateRoute>} />
+                    <Route path="/bookings/new/:resourceId" element={<PrivateRoute><BookingForm /></PrivateRoute>} />
+                    <Route path="/bookings/edit/:bookingId" element={<PrivateRoute><BookingForm /></PrivateRoute>} />
                     <Route path="/resources" element={<PrivateRoute><ResourceListPage /></PrivateRoute>} />
                 </Routes>
             </AuthProvider>

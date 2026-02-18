@@ -66,3 +66,66 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Form styling */
+.disabled-input {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-help {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Error and Success Messages */
+.error-message {
+  background-color: #f8d7da;
+  border: 1px solid #f5c2c7;
+  border-radius: 8px;
+  color: #842029;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.success-message {
+  background-color: #d1e7dd;
+  border: 1px solid #badbcc;
+  border-radius: 8px;
+  color: #0f5132;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .disabled-input {
+    background-color: #2d2d2d;
+  }
+
+  .form-help {
+    color: #a0a0a0;
+  }
+
+  .error-message {
+    background-color: #5a1f1f;
+    border-color: #7a2f2f;
+    color: #ffcccc;
+  }
+
+  .success-message {
+    background-color: #1f4a2f;
+    border-color: #2f5a3f;
+    color: #ccffcc;
+  }
+}
+
