@@ -2,11 +2,10 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import HomePage from '../HomePage';
-import * as AuthContextModule from '../../context/AuthContext';
+import * as useAuthModule from '../../hooks/useAuth';
 
 // Mock the useAuth hook
-jest.mock('../../context/AuthContext', () => ({
-  ...jest.requireActual('../../context/AuthContext'),
+jest.mock('../../hooks/useAuth', () => ({
   useAuth: jest.fn(),
 }));
 
@@ -18,7 +17,7 @@ const renderWithProviders = (ui, { authValue, ...renderOptions } = {}) => {
     loading: false,
   };
 
-  AuthContextModule.useAuth.mockReturnValue({ ...defaultAuthValue, ...authValue });
+  useAuthModule.useAuth.mockReturnValue({ ...defaultAuthValue, ...authValue });
 
   return render(
     <BrowserRouter>{ui}</BrowserRouter>,
