@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
 import PrivateRoute from './components/PrivateRoute';
+import ResourceListPage from "./pages/ResourceListPage.jsx";
 
 function App() {
     return (
@@ -17,7 +18,7 @@ function App() {
                     <Route path="/register" element={<RegisterPage />} />
                     {/* Protected routes, will redirect to login page if not logged in*/}
                     <Route path="/bookings" element={<PrivateRoute><p>My Bookings Page </p></PrivateRoute>} />
-                    <Route path="/resources" element={<PrivateRoute><p>Resources Page </p></PrivateRoute>} />
+                    <Route path="/resources" element={<PrivateRoute><ResourceListPage /></PrivateRoute>} />
                 </Routes>
             </AuthProvider>
         </Router>
