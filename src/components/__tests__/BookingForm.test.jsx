@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import BookingForm from '../BookingForm';
@@ -11,6 +11,34 @@ jest.mock('../../services/api');
 
 // Mock useAuth hook
 jest.mock('../../hooks/useAuth');
+
+// Mock react-datepicker
+jest.mock('react-datepicker', () => ({
+  __esModule: true,
+  default: require('react').forwardRef(({ selected, onChange, placeholderText, id, disabled }, ref) => {
+    const React = require('react');
+    return React.createElement('input', {
+      ref: ref,
+      type: 'text',
+      id: id,
+      value: selected && selected instanceof Date && !isNaN(selected.getTime()) ? selected.toISOString() : '',
+      onChange: (e) => {
+        if (e.target.value) {
+          const date = new Date(e.target.value);
+          if (!isNaN(date.getTime())) {
+            onChange(date);
+          }
+        } else {
+          onChange(null);
+        }
+      },
+      placeholder: placeholderText,
+      disabled: disabled,
+      'aria-label': placeholderText,
+      'data-testid': `datepicker-${id}`,
+    });
+  }),
+}));
 
 // Mock useNavigate
 const mockNavigate = jest.fn();
@@ -44,6 +72,11 @@ const renderWithRouter = (ui, { initialEntries = ['/book'] } = {}) => {
       </Routes>
     </MemoryRouter>
   );
+};
+
+// Helper function to set DatePicker value
+const setDatePickerValue = (input, isoString) => {
+  fireEvent.change(input, { target: { value: isoString } });
 };
 
 // Mock resources data
@@ -178,18 +211,18 @@ describe('BookingForm', () => {
       });
     });
 
-    it('formats datetime correctly for datetime-local inputs', async () => {
+    it('formats datetime correctly for DatePicker', async () => {
       api.get.mockResolvedValue({ data: mockBooking });
 
       renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
 
       await waitFor(() => {
-        const startInput = screen.getByLabelText(/start time/i);
-        const endInput = screen.getByLabelText(/end time/i);
+        const startInput = screen.getByTestId('datepicker-start_time');
+        const endInput = screen.getByTestId('datepicker-end_time');
 
-        // Should be in YYYY-MM-DDTHH:mm format
-        expect(startInput.value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
-        expect(endInput.value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+        // Should be in ISO format (toISOString())
+        expect(startInput.value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+        expect(endInput.value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
       });
     });
 
@@ -263,11 +296,11 @@ describe('BookingForm', () => {
     it('shows error when submitting without selecting a resource', async () => {
       const user = userEvent.setup({ delay: null });
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const form = screen.getByRole('heading', { name: /create a booking/i }).closest('div').querySelector('form');
       const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
@@ -284,8 +317,8 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const form = screen.getByRole('heading', { name: /create a booking/i }).closest('div').querySelector('form');
       const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
@@ -302,8 +335,8 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
       // Manually trigger form submission to bypass HTML5 validation
       const form = screen.getByRole('heading', { name: /create a booking/i }).closest('div').querySelector('form');
@@ -321,11 +354,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T14:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T14:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T10:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T10:00:00.000Z');
 
       const submitButton = screen.getByRole('button', { name: /create booking/i });
       await user.click(submitButton);
@@ -341,11 +374,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-17T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-17T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-17T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-17T12:00:00.000Z');
 
       const submitButton = screen.getByRole('button', { name: /create booking/i });
       await user.click(submitButton);
@@ -394,11 +427,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const notesInput = screen.getByLabelText(/notes/i);
       await user.type(notesInput, 'Team meeting');
@@ -409,8 +442,8 @@ describe('BookingForm', () => {
       await waitFor(() => {
         expect(api.post).toHaveBeenCalledWith('/bookings/', {
           resource: '1',
-          start_time: '2026-02-20T10:00',
-          end_time: '2026-02-20T12:00',
+          start_time: '2026-02-20T10:00:00.000Z',
+          end_time: '2026-02-20T12:00:00.000Z',
           notes: 'Team meeting',
         });
       });
@@ -427,11 +460,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const notesInput = screen.getByLabelText(/notes/i);
       await user.type(notesInput, '  Important meeting  ');
@@ -453,11 +486,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const notesInput = screen.getByLabelText(/notes/i);
       await user.type(notesInput, 'Test notes');
@@ -483,11 +516,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const submitButton = screen.getByRole('button', { name: /create booking/i });
       await user.click(submitButton);
@@ -604,11 +637,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const submitButton = screen.getByRole('button', { name: /create booking/i });
       await user.click(submitButton);
@@ -631,11 +664,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const submitButton = screen.getByRole('button', { name: /create booking/i });
       await user.click(submitButton);
@@ -659,11 +692,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const submitButton = screen.getByRole('button', { name: /create booking/i });
       await user.click(submitButton);
@@ -682,11 +715,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const submitButton = screen.getByRole('button', { name: /create booking/i });
       await user.click(submitButton);
@@ -729,11 +762,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const submitButton = screen.getByRole('button', { name: /create booking/i });
       await user.click(submitButton);
@@ -767,11 +800,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const submitButton = screen.getByRole('button', { name: /create booking/i });
       await user.click(submitButton);
@@ -791,8 +824,8 @@ describe('BookingForm', () => {
       renderWithRouter(<BookingForm />, { initialEntries: ['/book/1'] });
 
       expect(screen.queryByLabelText(/resource/i)).not.toBeInTheDocument();
-      expect(screen.getByLabelText(/start time/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/end time/i)).toBeInTheDocument();
+      expect(screen.getByTestId('datepicker-start_time')).toBeInTheDocument();
+      expect(screen.getByTestId('datepicker-end_time')).toBeInTheDocument();
     });
 
     it('uses the provided resourceId for booking submission', async () => {
@@ -801,11 +834,11 @@ describe('BookingForm', () => {
 
       renderWithRouter(<BookingForm />, { initialEntries: ['/book/5'] });
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const submitButton = screen.getByRole('button', { name: /create booking/i });
       await user.click(submitButton);
@@ -857,11 +890,11 @@ describe('BookingForm', () => {
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
 
-      const startTimeInput = screen.getByLabelText(/start time/i);
-      await user.type(startTimeInput, '2026-02-20T10:00');
+      const startTimeInput = screen.getByTestId('datepicker-start_time');
+      setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const endTimeInput = screen.getByLabelText(/end time/i);
-      await user.type(endTimeInput, '2026-02-20T12:00');
+      const endTimeInput = screen.getByTestId('datepicker-end_time');
+      setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
       const submitButton = screen.getByRole('button', { name: /create booking/i });
       await user.click(submitButton);

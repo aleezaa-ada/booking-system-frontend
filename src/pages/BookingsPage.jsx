@@ -90,9 +90,13 @@ function BookingsPage() {
     if (loading) {
         return (
             <PageLayout>
-                <div className="my-bookings-page">
-                    <h2>My Bookings</h2>
-                    <p className="loading-message">Loading bookings...</p>
+                <div className="page-header">
+                    <h1>My Bookings</h1>
+                    <p>Manage your resource bookings</p>
+                </div>
+                <div className="loading-state">
+                    <div className="loading-spinner"></div>
+                    <p>Loading bookings...</p>
                 </div>
             </PageLayout>
         );
@@ -101,12 +105,14 @@ function BookingsPage() {
     if (error) {
         return (
             <PageLayout>
-                <div className="my-bookings-page">
-                    <h2>My Bookings</h2>
-                    <div className="error-message">
-                        <p>{error}</p>
-                        <button onClick={fetchBookings}>Retry</button>
-                    </div>
+                <div className="page-header">
+                    <h1>My Bookings</h1>
+                    <p>Manage your resource bookings</p>
+                </div>
+                <div className="error-state">
+                    <h3>Error</h3>
+                    <p>{error}</p>
+                    <button onClick={fetchBookings} className="action-button">Retry</button>
                 </div>
             </PageLayout>
         );
@@ -115,10 +121,15 @@ function BookingsPage() {
     if (bookings.length === 0) {
         return (
             <PageLayout>
-                <div className="my-bookings-page">
-                    <h2>My Bookings</h2>
-                    <p className="no-bookings-message">You don't have any bookings yet.</p>
-                    <Link to="/resources" className="create-booking-link">
+                <div className="page-header">
+                    <h1>My Bookings</h1>
+                    <p>Manage your resource bookings</p>
+                </div>
+                <div className="empty-state">
+                    <div className="empty-state-icon">📅</div>
+                    <h3>No Bookings Yet</h3>
+                    <p>You haven't made any bookings yet. Browse resources to get started!</p>
+                    <Link to="/resources" className="action-button">
                         Browse Resources
                     </Link>
                 </div>
@@ -128,12 +139,18 @@ function BookingsPage() {
 
     return (
         <PageLayout>
-            <div className="my-bookings-page">
-                <h2>My Bookings</h2>
-                <Link to="/resources" className="create-booking-link">
+            <div className="page-header">
+                <h1>My Bookings</h1>
+                <p>Manage your resource bookings</p>
+            </div>
+
+            <div className="action-buttons">
+                <Link to="/resources" className="action-button">
                     Create New Booking
                 </Link>
+            </div>
 
+            <div className="content-container">
                 <div className="bookings-table-container">
                     <table className="bookings-table">
                         <thead>
@@ -189,10 +206,10 @@ function BookingsPage() {
                                     </td>
                                 </tr>
                             ))}
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
         </PageLayout>
     );
 }

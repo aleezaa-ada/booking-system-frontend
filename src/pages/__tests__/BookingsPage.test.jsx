@@ -247,7 +247,7 @@ describe('BookingsPage', () => {
             renderWithRouter(<BookingsPage />);
 
             await waitFor(() => {
-                expect(screen.getByText(/you don't have any bookings yet/i)).toBeInTheDocument();
+                expect(screen.getByText(/You haven't made any bookings yet. Browse resources to get started!/i)).toBeInTheDocument();
             });
         });
 
@@ -267,7 +267,7 @@ describe('BookingsPage', () => {
             const { container } = renderWithRouter(<BookingsPage />);
 
             await waitFor(() => {
-                expect(screen.getByText(/you don't have any bookings yet/i)).toBeInTheDocument();
+                expect(screen.getByText(/You haven't made any bookings yet. Browse resources to get started!/i)).toBeInTheDocument();
             });
 
             expect(container.querySelector('.bookings-table')).not.toBeInTheDocument();

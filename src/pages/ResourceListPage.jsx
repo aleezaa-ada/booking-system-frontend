@@ -29,9 +29,13 @@ function ResourceListPage() {
     if (loading) {
         return (
             <PageLayout>
-                <div className="resource-list-page">
-                    <h2>Available Resources</h2>
-                    <p className="loading-message">Loading resources...</p>
+                <div className="page-header">
+                    <h1>Available Resources</h1>
+                    <p>Browse and book available resources</p>
+                </div>
+                <div className="loading-state">
+                    <div className="loading-spinner"></div>
+                    <p>Loading resources...</p>
                 </div>
             </PageLayout>
         );
@@ -40,12 +44,14 @@ function ResourceListPage() {
     if (error) {
         return (
             <PageLayout>
-                <div className="resource-list-page">
-                    <h2>Available Resources</h2>
-                    <div className="error-message">
-                        <p>{error}</p>
-                        <button onClick={fetchResources}>Retry</button>
-                    </div>
+                <div className="page-header">
+                    <h1>Available Resources</h1>
+                    <p>Browse and book available resources</p>
+                </div>
+                <div className="error-state">
+                    <h3>Error</h3>
+                    <p>{error}</p>
+                    <button onClick={fetchResources} className="action-button">Retry</button>
                 </div>
             </PageLayout>
         );
@@ -54,9 +60,14 @@ function ResourceListPage() {
     if (resources.length === 0) {
         return (
             <PageLayout>
-                <div className="resource-list-page">
-                    <h2>Available Resources</h2>
-                    <p className="no-resources-message">No resources available at the moment.</p>
+                <div className="page-header">
+                    <h1>Available Resources</h1>
+                    <p>Browse and book available resources</p>
+                </div>
+                <div className="empty-state">
+                    <div className="empty-state-icon">📦</div>
+                    <h3>No Resources Available</h3>
+                    <p>There are no resources available at the moment. Please check back later.</p>
                 </div>
             </PageLayout>
         );
@@ -64,44 +75,46 @@ function ResourceListPage() {
 
     return (
         <PageLayout>
-            <div className="resource-list-page">
-                <h2>Available Resources</h2>
-                <div className="resources-container">
-                    {resources.map((resource) => (
-                        <div key={resource.id} className="resource-card">
-                            <h3>{resource.name}</h3>
-                            {resource.description && (
-                                <p className="resource-description">{resource.description}</p>
-                            )}
-                            <div className="resource-details">
-                                <p className="resource-capacity">
-                                    <strong>Capacity:</strong> {resource.capacity}
-                                </p>
-                                <p className={`resource-status ${resource.is_available ? 'available' : 'unavailable'}`}>
-                                    <strong>Status:</strong> {resource.is_available ? 'Available' : 'Unavailable'}
-                                </p>
-                            </div>
-                            {resource.is_available ? (
-                                <Link
-                                    to={`/bookings/new/${resource.id}`}
-                                    className="book-button"
-                                    aria-label={`Book ${resource.name}`}
-                                >
-                                    Book Now
-                                </Link>
-                            ) : (
-                                <button
-                                    className="book-button disabled"
-                                    disabled
-                                    aria-label={`${resource.name} is unavailable`}
-                                >
-                                    Unavailable
-                                </button>
-                            )}
+            <div className="page-header">
+                <h1>Available Resources</h1>
+                <p>Browse and book available resources</p>
+            </div>
+
+            <div className="resources-container">
+                {resources.map((resource) => (
+                    <div key={resource.id} className="resource-card">
+                        <h3>{resource.name}</h3>
+                        {resource.description && (
+                            <p className="resource-description">{resource.description}</p>
+                        )}
+                        <div className="resource-details">
+                            <p className="resource-capacity">
+                                <strong>Capacity:</strong> {resource.capacity}
+                            </p>
+                            <p className={`resource-status ${resource.is_available ? 'available' : 'unavailable'}`}>
+                                <strong>Status:</strong> {resource.is_available ? 'Available' : 'Unavailable'}
+                            </p>
+                        </div>
+                        {resource.is_available ? (
+                            <Link
+                                to={`/bookings/new/${resource.id}`}
+                                className="book-button"
+                                aria-label={`Book ${resource.name}`}
+                            >
+                                Book Now
+                            </Link>
+                        ) : (
+                            <button
+                                className="book-button disabled"
+                                disabled
+                                aria-label={`${resource.name} is unavailable`}
+                            >
+                                Unavailable
+                            </button>
+                        )}
                     </div>
                 ))}
             </div>
-        </div>
         </PageLayout>
     );
 }

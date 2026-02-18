@@ -45,12 +45,12 @@ describe('LoginPage', () => {
   describe('Rendering', () => {
     it('renders login heading', () => {
       renderWithProviders(<LoginPage />);
-      expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /welcome back/i })).toBeInTheDocument();
     });
 
     it('renders username input field', () => {
       renderWithProviders(<LoginPage />);
-      const usernameInput = screen.getByPlaceholderText(/username/i);
+      const usernameInput = screen.getByPlaceholderText(/enter your username/i);
       expect(usernameInput).toBeInTheDocument();
       expect(usernameInput).toHaveAttribute('type', 'text');
       expect(usernameInput).toBeRequired();
@@ -58,7 +58,7 @@ describe('LoginPage', () => {
 
     it('renders password input field', () => {
       renderWithProviders(<LoginPage />);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const passwordInput = screen.getByPlaceholderText(/enter your password/i);
       expect(passwordInput).toBeInTheDocument();
       expect(passwordInput).toHaveAttribute('type', 'password');
       expect(passwordInput).toBeRequired();
@@ -80,7 +80,7 @@ describe('LoginPage', () => {
       const user = userEvent.setup();
       renderWithProviders(<LoginPage />);
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
+      const usernameInput = screen.getByPlaceholderText(/enter your username/i);
       await user.type(usernameInput, 'testuser');
 
       expect(usernameInput).toHaveValue('testuser');
@@ -90,7 +90,7 @@ describe('LoginPage', () => {
       const user = userEvent.setup();
       renderWithProviders(<LoginPage />);
 
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const passwordInput = screen.getByPlaceholderText(/enter your password/i);
       await user.type(passwordInput, 'password123');
 
       expect(passwordInput).toHaveValue('password123');
@@ -100,8 +100,8 @@ describe('LoginPage', () => {
       const user = userEvent.setup();
       renderWithProviders(<LoginPage />);
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+      const passwordInput = screen.getByPlaceholderText(/enter your password/i);
 
       await user.type(usernameInput, 'testuser');
       await user.type(passwordInput, 'password123');
@@ -113,8 +113,8 @@ describe('LoginPage', () => {
     it('starts with empty input fields', () => {
       renderWithProviders(<LoginPage />);
 
-      expect(screen.getByPlaceholderText(/username/i)).toHaveValue('');
-      expect(screen.getByPlaceholderText(/password/i)).toHaveValue('');
+      expect(screen.getByPlaceholderText(/enter your username/i)).toHaveValue('');
+      expect(screen.getByPlaceholderText(/enter your password/i)).toHaveValue('');
     });
   });
 
@@ -127,8 +127,8 @@ describe('LoginPage', () => {
         authValue: { login: mockLogin },
       });
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+      const passwordInput = screen.getByPlaceholderText(/enter your password/i);
       const loginButton = screen.getByRole('button', { name: /login/i });
 
       await user.type(usernameInput, 'testuser');
@@ -148,8 +148,8 @@ describe('LoginPage', () => {
         authValue: { login: mockLogin },
       });
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+      const passwordInput = screen.getByPlaceholderText(/enter your password/i);
       const loginButton = screen.getByRole('button', { name: /login/i });
 
       await user.type(usernameInput, 'testuser');
@@ -161,7 +161,7 @@ describe('LoginPage', () => {
       });
     });
 
-    it('does not show alert on successful login', async () => {
+    it('does not show error message on successful login', async () => {
       const user = userEvent.setup();
       const mockLogin = jest.fn().mockResolvedValue(true);
 
@@ -169,8 +169,8 @@ describe('LoginPage', () => {
         authValue: { login: mockLogin },
       });
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+      const passwordInput = screen.getByPlaceholderText(/enter your password/i);
       const loginButton = screen.getByRole('button', { name: /login/i });
 
       await user.type(usernameInput, 'testuser');
@@ -181,12 +181,12 @@ describe('LoginPage', () => {
         expect(mockLogin).toHaveBeenCalled();
       });
 
-      expect(global.alert).not.toHaveBeenCalled();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
   });
 
   describe('Form Submission - Failure', () => {
-    it('shows alert on failed login', async () => {
+    it('shows error message on failed login', async () => {
       const user = userEvent.setup();
       const mockLogin = jest.fn().mockResolvedValue(false);
 
@@ -194,8 +194,8 @@ describe('LoginPage', () => {
         authValue: { login: mockLogin },
       });
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+      const passwordInput = screen.getByPlaceholderText(/enter your password/i);
       const loginButton = screen.getByRole('button', { name: /login/i });
 
       await user.type(usernameInput, 'wronguser');
@@ -203,7 +203,7 @@ describe('LoginPage', () => {
       await user.click(loginButton);
 
       await waitFor(() => {
-        expect(global.alert).toHaveBeenCalledWith('Login failed!');
+        expect(screen.getByText(/invalid username or password/i)).toBeInTheDocument();
       });
     });
 
@@ -215,8 +215,8 @@ describe('LoginPage', () => {
         authValue: { login: mockLogin },
       });
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+      const passwordInput = screen.getByPlaceholderText(/enter your password/i);
       const loginButton = screen.getByRole('button', { name: /login/i });
 
       await user.type(usernameInput, 'wronguser');
@@ -238,8 +238,8 @@ describe('LoginPage', () => {
         authValue: { login: mockLogin },
       });
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const usernameInput = screen.getByPlaceholderText(/enter your username/i);
+      const passwordInput = screen.getByPlaceholderText(/enter your password/i);
       const loginButton = screen.getByRole('button', { name: /login/i });
 
       await user.type(usernameInput, 'testuser');
@@ -267,7 +267,7 @@ describe('LoginPage', () => {
   describe('Accessibility', () => {
     it('has proper heading structure', () => {
       renderWithProviders(<LoginPage />);
-      const heading = screen.getByRole('heading', { name: /login/i });
+      const heading = screen.getByRole('heading', { name: /Welcome Back/i });
       expect(heading).toBeInTheDocument();
       expect(heading.tagName).toBe('H2');
     });
@@ -282,7 +282,7 @@ describe('LoginPage', () => {
   describe('Navigation', () => {
     it('displays link to registration page', () => {
       renderWithProviders(<LoginPage />);
-      const registerLink = screen.getByRole('link', { name: /register here/i });
+      const registerLink = screen.getByRole('link', { name: /Create Account/i });
       expect(registerLink).toBeInTheDocument();
       expect(registerLink).toHaveAttribute('href', '/register');
     });

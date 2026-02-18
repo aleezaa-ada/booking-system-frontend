@@ -33,12 +33,12 @@ describe('HomePage', () => {
   describe('when user is not logged in', () => {
     it('renders welcome message', () => {
       renderWithProviders(<HomePage />);
-      expect(screen.getByText('Welcome to the Booking System!')).toBeInTheDocument();
+      expect(screen.getByText('Welcome to the Booking System')).toBeInTheDocument();
     });
 
     it('shows login prompt message', () => {
       renderWithProviders(<HomePage />);
-      expect(screen.getByText('Please log in or register.')).toBeInTheDocument();
+      expect(screen.getByText('Please log in or create an account to start booking resources.')).toBeInTheDocument();
     });
 
     it('displays login link', () => {
@@ -79,14 +79,16 @@ describe('HomePage', () => {
       renderWithProviders(<HomePage />, {
         authValue: { user: mockUser, logout: mockLogout },
       });
-      expect(screen.getByText('Welcome to the Booking System!')).toBeInTheDocument();
+      expect(screen.getByText('Welcome to the Booking System')).toBeInTheDocument();
     });
 
     it('displays personalized greeting with username', () => {
       renderWithProviders(<HomePage />, {
         authValue: { user: mockUser, logout: mockLogout },
       });
-      expect(screen.getByText(`Hello, ${mockUser.username}!`)).toBeInTheDocument();
+      // The greeting contains "Hello," and the username separately
+      expect(screen.getByText(/hello/i)).toBeInTheDocument();
+      expect(screen.getByText(mockUser.username)).toBeInTheDocument();
     });
 
     it('displays logout button', () => {
@@ -118,7 +120,7 @@ describe('HomePage', () => {
       renderWithProviders(<HomePage />, {
         authValue: { user: mockUser, logout: mockLogout },
       });
-      const resourcesLink = screen.getByRole('link', { name: /view resources/i });
+      const resourcesLink = screen.getByRole('link', { name: /Browse Resources/i });
       expect(resourcesLink).toBeInTheDocument();
       expect(resourcesLink).toHaveAttribute('href', '/resources');
     });
@@ -142,7 +144,7 @@ describe('HomePage', () => {
   describe('accessibility', () => {
     it('has proper heading structure', () => {
       renderWithProviders(<HomePage />);
-      const heading = screen.getByRole('heading', { name: /welcome to the booking system!/i });
+      const heading = screen.getByRole('heading', { name: /welcome to the booking system/i });
       expect(heading).toBeInTheDocument();
       expect(heading.tagName).toBe('H1');
     });

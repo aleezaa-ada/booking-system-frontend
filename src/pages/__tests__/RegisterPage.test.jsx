@@ -45,12 +45,12 @@ describe('RegisterPage', () => {
   describe('Rendering', () => {
     it('renders register heading', () => {
       renderWithProviders(<RegisterPage />);
-      expect(screen.getByRole('heading', { name: /register/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
     });
 
     it('renders username input field', () => {
       renderWithProviders(<RegisterPage />);
-      const usernameInput = screen.getByPlaceholderText(/username/i);
+      const usernameInput = screen.getByPlaceholderText(/choose a username/i);
       expect(usernameInput).toBeInTheDocument();
       expect(usernameInput).toHaveAttribute('type', 'text');
       expect(usernameInput).toBeRequired();
@@ -58,7 +58,7 @@ describe('RegisterPage', () => {
 
     it('renders email input field', () => {
       renderWithProviders(<RegisterPage />);
-      const emailInput = screen.getByPlaceholderText(/email/i);
+      const emailInput = screen.getByPlaceholderText(/enter your email/i);
       expect(emailInput).toBeInTheDocument();
       expect(emailInput).toHaveAttribute('type', 'email');
       expect(emailInput).toBeRequired();
@@ -66,7 +66,7 @@ describe('RegisterPage', () => {
 
     it('renders password input field', () => {
       renderWithProviders(<RegisterPage />);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const passwordInput = screen.getByPlaceholderText(/create a strong password/i);
       expect(passwordInput).toBeInTheDocument();
       expect(passwordInput).toHaveAttribute('type', 'password');
       expect(passwordInput).toBeRequired();
@@ -74,7 +74,7 @@ describe('RegisterPage', () => {
 
     it('renders register button', () => {
       renderWithProviders(<RegisterPage />);
-      expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
     });
 
     it('has a form element', () => {
@@ -88,7 +88,7 @@ describe('RegisterPage', () => {
       const user = userEvent.setup();
       renderWithProviders(<RegisterPage />);
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
+      const usernameInput = screen.getByPlaceholderText(/choose a username/i);
       await user.type(usernameInput, 'newuser');
 
       expect(usernameInput).toHaveValue('newuser');
@@ -98,7 +98,7 @@ describe('RegisterPage', () => {
       const user = userEvent.setup();
       renderWithProviders(<RegisterPage />);
 
-      const emailInput = screen.getByPlaceholderText(/email/i);
+      const emailInput = screen.getByPlaceholderText(/enter your email/i);
       await user.type(emailInput, 'newuser@example.com');
 
       expect(emailInput).toHaveValue('newuser@example.com');
@@ -108,7 +108,7 @@ describe('RegisterPage', () => {
       const user = userEvent.setup();
       renderWithProviders(<RegisterPage />);
 
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const passwordInput = screen.getByPlaceholderText(/create a strong password/i);
       await user.type(passwordInput, 'password123');
 
       expect(passwordInput).toHaveValue('password123');
@@ -118,9 +118,9 @@ describe('RegisterPage', () => {
       const user = userEvent.setup();
       renderWithProviders(<RegisterPage />);
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const emailInput = screen.getByPlaceholderText(/email/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const usernameInput = screen.getByPlaceholderText(/choose a username/i);
+      const emailInput = screen.getByPlaceholderText(/enter your email/i);
+      const passwordInput = screen.getByPlaceholderText(/create a strong password/i);
 
       await user.type(usernameInput, 'newuser');
       await user.type(emailInput, 'newuser@example.com');
@@ -134,9 +134,9 @@ describe('RegisterPage', () => {
     it('starts with empty input fields', () => {
       renderWithProviders(<RegisterPage />);
 
-      expect(screen.getByPlaceholderText(/username/i)).toHaveValue('');
-      expect(screen.getByPlaceholderText(/email/i)).toHaveValue('');
-      expect(screen.getByPlaceholderText(/password/i)).toHaveValue('');
+      expect(screen.getByPlaceholderText(/choose a username/i)).toHaveValue('');
+      expect(screen.getByPlaceholderText(/enter your email/i)).toHaveValue('');
+      expect(screen.getByPlaceholderText(/create a strong password/i)).toHaveValue('');
     });
   });
 
@@ -149,10 +149,10 @@ describe('RegisterPage', () => {
         authValue: { register: mockRegister },
       });
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const emailInput = screen.getByPlaceholderText(/email/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
-      const registerButton = screen.getByRole('button', { name: /register/i });
+      const usernameInput = screen.getByPlaceholderText(/choose a username/i);
+      const emailInput = screen.getByPlaceholderText(/enter your email/i);
+      const passwordInput = screen.getByPlaceholderText(/create a strong password/i);
+      const registerButton = screen.getByRole('button', { name: /create account/i });
 
       await user.type(usernameInput, 'newuser');
       await user.type(emailInput, 'newuser@example.com');
@@ -172,10 +172,10 @@ describe('RegisterPage', () => {
         authValue: { register: mockRegister },
       });
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const emailInput = screen.getByPlaceholderText(/email/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
-      const registerButton = screen.getByRole('button', { name: /register/i });
+      const usernameInput = screen.getByPlaceholderText(/choose a username/i);
+      const emailInput = screen.getByPlaceholderText(/enter your email/i);
+      const passwordInput = screen.getByPlaceholderText(/create a strong password/i);
+      const registerButton = screen.getByRole('button', { name: /create account/i });
 
       await user.type(usernameInput, 'newuser');
       await user.type(emailInput, 'newuser@example.com');
@@ -187,7 +187,7 @@ describe('RegisterPage', () => {
       });
     });
 
-    it('does not show alert on successful registration', async () => {
+    it('does not show error message on successful registration', async () => {
       const user = userEvent.setup();
       const mockRegister = jest.fn().mockResolvedValue(true);
 
@@ -195,10 +195,10 @@ describe('RegisterPage', () => {
         authValue: { register: mockRegister },
       });
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const emailInput = screen.getByPlaceholderText(/email/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
-      const registerButton = screen.getByRole('button', { name: /register/i });
+      const usernameInput = screen.getByPlaceholderText(/choose a username/i);
+      const emailInput = screen.getByPlaceholderText(/enter your email/i);
+      const passwordInput = screen.getByPlaceholderText(/create a strong password/i);
+      const registerButton = screen.getByRole('button', { name: /create account/i });
 
       await user.type(usernameInput, 'newuser');
       await user.type(emailInput, 'newuser@example.com');
@@ -209,12 +209,12 @@ describe('RegisterPage', () => {
         expect(mockRegister).toHaveBeenCalled();
       });
 
-      expect(global.alert).not.toHaveBeenCalled();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
   });
 
   describe('Form Submission - Failure', () => {
-    it('shows alert on failed registration', async () => {
+    it('shows error message on failed registration', async () => {
       const user = userEvent.setup();
       const mockRegister = jest.fn().mockResolvedValue(false);
 
@@ -222,10 +222,10 @@ describe('RegisterPage', () => {
         authValue: { register: mockRegister },
       });
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const emailInput = screen.getByPlaceholderText(/email/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
-      const registerButton = screen.getByRole('button', { name: /register/i });
+      const usernameInput = screen.getByPlaceholderText(/choose a username/i);
+      const emailInput = screen.getByPlaceholderText(/enter your email/i);
+      const passwordInput = screen.getByPlaceholderText(/create a strong password/i);
+      const registerButton = screen.getByRole('button', { name: /create account/i });
 
       await user.type(usernameInput, 'existinguser');
       await user.type(emailInput, 'existing@example.com');
@@ -233,7 +233,7 @@ describe('RegisterPage', () => {
       await user.click(registerButton);
 
       await waitFor(() => {
-        expect(global.alert).toHaveBeenCalledWith('Registration failed!');
+        expect(screen.getByText(/registration failed/i)).toBeInTheDocument();
       });
     });
 
@@ -245,10 +245,10 @@ describe('RegisterPage', () => {
         authValue: { register: mockRegister },
       });
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const emailInput = screen.getByPlaceholderText(/email/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
-      const registerButton = screen.getByRole('button', { name: /register/i });
+      const usernameInput = screen.getByPlaceholderText(/choose a username/i);
+      const emailInput = screen.getByPlaceholderText(/enter your email/i);
+      const passwordInput = screen.getByPlaceholderText(/create a strong password/i);
+      const registerButton = screen.getByRole('button', { name: /create account/i });
 
       await user.type(usernameInput, 'existinguser');
       await user.type(emailInput, 'existing@example.com');
@@ -270,10 +270,10 @@ describe('RegisterPage', () => {
         authValue: { register: mockRegister },
       });
 
-      const usernameInput = screen.getByPlaceholderText(/username/i);
-      const emailInput = screen.getByPlaceholderText(/email/i);
-      const passwordInput = screen.getByPlaceholderText(/password/i);
-      const registerButton = screen.getByRole('button', { name: /register/i });
+      const usernameInput = screen.getByPlaceholderText(/choose a username/i);
+      const emailInput = screen.getByPlaceholderText(/enter your email/i);
+      const passwordInput = screen.getByPlaceholderText(/create a strong password/i);
+      const registerButton = screen.getByRole('button', { name: /create account/i });
 
       await user.type(usernameInput, 'newuser');
       await user.type(emailInput, 'newuser@example.com');
@@ -289,36 +289,36 @@ describe('RegisterPage', () => {
   describe('Form Validation', () => {
     it('has required attribute on username field', () => {
       renderWithProviders(<RegisterPage />);
-      expect(screen.getByPlaceholderText(/username/i)).toBeRequired();
+      expect(screen.getByPlaceholderText(/choose a username/i)).toBeRequired();
     });
 
     it('has required attribute on email field', () => {
       renderWithProviders(<RegisterPage />);
-      expect(screen.getByPlaceholderText(/email/i)).toBeRequired();
+      expect(screen.getByPlaceholderText(/enter your email/i)).toBeRequired();
     });
 
     it('has required attribute on password field', () => {
       renderWithProviders(<RegisterPage />);
-      expect(screen.getByPlaceholderText(/password/i)).toBeRequired();
+      expect(screen.getByPlaceholderText(/create a strong password/i)).toBeRequired();
     });
 
     it('email field has type email', () => {
       renderWithProviders(<RegisterPage />);
-      expect(screen.getByPlaceholderText(/email/i)).toHaveAttribute('type', 'email');
+      expect(screen.getByPlaceholderText(/enter your email/i)).toHaveAttribute('type', 'email');
     });
   });
 
   describe('Accessibility', () => {
     it('has proper heading structure', () => {
       renderWithProviders(<RegisterPage />);
-      const heading = screen.getByRole('heading', { name: /register/i });
+      const heading = screen.getByRole('heading', { name: /Create Account/i });
       expect(heading).toBeInTheDocument();
       expect(heading.tagName).toBe('H2');
     });
 
     it('form has submit button type', () => {
       renderWithProviders(<RegisterPage />);
-      const submitButton = screen.getByRole('button', { name: /register/i });
+      const submitButton = screen.getByRole('button', { name: /Create Account/i });
       expect(submitButton).toHaveAttribute('type', 'submit');
     });
   });

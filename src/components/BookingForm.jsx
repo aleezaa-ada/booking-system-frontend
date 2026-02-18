@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import './BookingForm.css';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
@@ -12,8 +15,8 @@ function BookingForm({ onSuccess }) {
     const [resources, setResources] = useState([]);
     const [selectedResourceId, setSelectedResourceId] = useState(resourceId || '');
     const [resourceName, setResourceName] = useState(''); // For displaying resource name when editing
-    const [startTime, setStartTime] = useState('');
-    const [endTime, setEndTime] = useState('');
+    const [startTime, setStartTime] = useState(null);
+    const [endTime, setEndTime] = useState(null);
     const [notes, setNotes] = useState('');
     const [status, setStatus] = useState('pending'); // Booking status
     const [loading, setLoading] = useState(false);
@@ -41,22 +44,9 @@ function BookingForm({ onSuccess }) {
                 setSelectedResourceId(booking.resource);
                 setResourceName(booking.resource_name || `Resource ${booking.resource}`);
 
-                // Format datetime for datetime-local input (YYYY-MM-DDTHH:mm)
-                // Remove timezone and seconds from ISO string
-                const formatDateTime = (isoString) => {
-                    if (!isoString) return '';
-                    // Convert to local time and format as YYYY-MM-DDTHH:mm
-                    const date = new Date(isoString);
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    return `${year}-${month}-${day}T${hours}:${minutes}`;
-                };
-
-                setStartTime(formatDateTime(booking.start_time));
-                setEndTime(formatDateTime(booking.end_time));
+                // Convert ISO strings to Date objects for DatePicker
+                setStartTime(booking.start_time ? new Date(booking.start_time) : null);
+                setEndTime(booking.end_time ? new Date(booking.end_time) : null);
                 setNotes(booking.notes || '');
                 setStatus(booking.status || 'pending');
             } catch (err) {
@@ -105,16 +95,13 @@ function BookingForm({ onSuccess }) {
             return false;
         }
 
-        const start = new Date(startTime);
-        const end = new Date(endTime);
-
-        if (start >= end) {
+        if (startTime >= endTime) {
             setError('End time must be after start time');
             return false;
         }
 
         // Only validate past time for new bookings, not when editing
-        if (!isEditMode && start < new Date()) {
+        if (!isEditMode && startTime < new Date()) {
             setError('Start time cannot be in the past');
             return false;
         }
@@ -135,8 +122,8 @@ function BookingForm({ onSuccess }) {
             setLoading(true);
             const bookingData = {
                 resource: selectedResourceId,
-                start_time: startTime,
-                end_time: endTime,
+                start_time: startTime.toISOString(),
+                end_time: endTime.toISOString(),
                 notes: notes.trim(),
             };
 
@@ -158,8 +145,8 @@ function BookingForm({ onSuccess }) {
                 if (!resourceId) {
                     setSelectedResourceId('');
                 }
-                setStartTime('');
-                setEndTime('');
+                setStartTime(null);
+                setEndTime(null);
                 setNotes('');
             }
 
@@ -318,25 +305,37 @@ function BookingForm({ onSuccess }) {
 
                 <div className="form-group">
                     <label htmlFor="start_time">Start Time *</label>
-                    <input
-                        type="datetime-local"
+                    <DatePicker
                         id="start_time"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                        required
+                        selected={startTime}
+                        onChange={(date) => setStartTime(date)}
+                        showTimeSelect
+                        timeFormat="HH:mm"
+                        timeIntervals={15}
+                        dateFormat="MMMM d, yyyy h:mm aa"
+                        minDate={new Date()}
                         disabled={loading}
+                        placeholderText="Select start date and time"
+                        className="date-picker-input"
+                        required
                     />
                 </div>
 
                 <div className="form-group">
                     <label htmlFor="end_time">End Time *</label>
-                    <input
-                        type="datetime-local"
+                    <DatePicker
                         id="end_time"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                        required
+                        selected={endTime}
+                        onChange={(date) => setEndTime(date)}
+                        showTimeSelect
+                        timeFormat="HH:mm"
+                        timeIntervals={15}
+                        dateFormat="MMMM d, yyyy h:mm aa"
+                        minDate={startTime || new Date()}
                         disabled={loading}
+                        placeholderText="Select end date and time"
+                        className="date-picker-input"
+                        required
                     />
                 </div>
 
