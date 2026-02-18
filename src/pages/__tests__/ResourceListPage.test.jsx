@@ -15,6 +15,15 @@ jest.mock('../../services/api', () => ({
     }
 }));
 
+// Mock the useAuth hook
+jest.mock('../../hooks/useAuth', () => ({
+    useAuth: jest.fn(() => ({
+        user: { id: 1, username: 'testuser', email: 'test@example.com' },
+        logout: jest.fn(),
+        loading: false,
+    })),
+}));
+
 // Import after mocking
 import api from '../../services/api';
 
@@ -296,10 +305,14 @@ describe('ResourceListPage', () => {
             renderWithRouter(<ResourceListPage />);
 
             await waitFor(() => {
-                const bookLinks = screen.getAllByRole('link', { name: /book/i });
-                expect(bookLinks[0]).toHaveAttribute('href', '/bookings/new/1');
-                expect(bookLinks[1]).toHaveAttribute('href', '/bookings/new/2');
-                expect(bookLinks[2]).toHaveAttribute('href', '/bookings/new/3');
+                // Get only the "Book Now" links by their specific aria-labels
+                const bookLink1 = screen.getByRole('link', { name: /book conference room/i });
+                const bookLink2 = screen.getByRole('link', { name: /book room b/i });
+                const bookLink3 = screen.getByRole('link', { name: /book room c/i });
+
+                expect(bookLink1).toHaveAttribute('href', '/bookings/new/1');
+                expect(bookLink2).toHaveAttribute('href', '/bookings/new/2');
+                expect(bookLink3).toHaveAttribute('href', '/bookings/new/3');
             });
         });
 

@@ -14,6 +14,15 @@ jest.mock('../../services/api', () => ({
     }
 }));
 
+// Mock the useAuth hook
+jest.mock('../../hooks/useAuth', () => ({
+    useAuth: jest.fn(() => ({
+        user: { id: 1, username: 'testuser', email: 'test@example.com' },
+        logout: jest.fn(),
+        loading: false,
+    })),
+}));
+
 // Import after mocking
 import api from '../../services/api';
 

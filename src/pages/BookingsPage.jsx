@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import PageLayout from '../components/PageLayout';
 
 function BookingsPage() {
     const [bookings, setBookings] = useState([]);
@@ -88,103 +89,111 @@ function BookingsPage() {
 
     if (loading) {
         return (
-            <div className="my-bookings-page">
-                <h2>My Bookings</h2>
-                <p className="loading-message">Loading bookings...</p>
-            </div>
+            <PageLayout>
+                <div className="my-bookings-page">
+                    <h2>My Bookings</h2>
+                    <p className="loading-message">Loading bookings...</p>
+                </div>
+            </PageLayout>
         );
     }
 
     if (error) {
         return (
-            <div className="my-bookings-page">
-                <h2>My Bookings</h2>
-                <div className="error-message">
-                    <p>{error}</p>
-                    <button onClick={fetchBookings}>Retry</button>
+            <PageLayout>
+                <div className="my-bookings-page">
+                    <h2>My Bookings</h2>
+                    <div className="error-message">
+                        <p>{error}</p>
+                        <button onClick={fetchBookings}>Retry</button>
+                    </div>
                 </div>
-            </div>
+            </PageLayout>
         );
     }
 
     if (bookings.length === 0) {
         return (
-            <div className="my-bookings-page">
-                <h2>My Bookings</h2>
-                <p className="no-bookings-message">You don't have any bookings yet.</p>
-                <Link to="/resources" className="create-booking-link">
-                    Browse Resources
-                </Link>
-            </div>
+            <PageLayout>
+                <div className="my-bookings-page">
+                    <h2>My Bookings</h2>
+                    <p className="no-bookings-message">You don't have any bookings yet.</p>
+                    <Link to="/resources" className="create-booking-link">
+                        Browse Resources
+                    </Link>
+                </div>
+            </PageLayout>
         );
     }
 
     return (
-        <div className="my-bookings-page">
-            <h2>My Bookings</h2>
-            <Link to="/resources" className="create-booking-link">
-                Create New Booking
-            </Link>
+        <PageLayout>
+            <div className="my-bookings-page">
+                <h2>My Bookings</h2>
+                <Link to="/resources" className="create-booking-link">
+                    Create New Booking
+                </Link>
 
-            <div className="bookings-table-container">
-                <table className="bookings-table">
-                    <thead>
-                        <tr>
-                            <th>Resource</th>
-                            <th>Start Time</th>
-                            <th>End Time</th>
-                            <th>Status</th>
-                            <th>Notes</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {bookings.map((booking) => (
-                            <tr key={booking.id} className="booking-row">
-                                <td className="resource-name">
-                                    {booking.resource_name || booking.resource}
-                                </td>
-                                <td className="start-time">
-                                    {formatDateTime(booking.start_time)}
-                                </td>
-                                <td className="end-time">
-                                    {formatDateTime(booking.end_time)}
-                                </td>
-                                <td>
-                                    <span className={`status-badge ${getStatusClass(booking.status)}`}>
-                                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                                    </span>
-                                </td>
-                                <td className="booking-notes">
-                                    {booking.notes || '-'}
-                                </td>
-                                <td className="actions">
-                                    <Link
-                                        to={`/bookings/edit/${booking.id}`}
-                                        className="edit-button"
-                                        aria-label={`Edit booking for ${booking.resource_name || booking.resource}`}
-                                    >
-                                        Edit
-                                    </Link>
-                                    <button
-                                        onClick={() => handleCancelBooking(booking.id)}
-                                        className="cancel-button"
-                                        disabled={
-                                            cancellingId === booking.id ||
-                                            booking.status === 'cancelled'
-                                        }
-                                        aria-label={`Delete booking for ${booking.resource_name || booking.resource}`}
-                                        title={booking.status === 'cancelled' ? 'Booking already cancelled' : 'Delete this booking'}
-                                    >
-                                        {cancellingId === booking.id ? 'Deleting...' : 'Delete'}
-                                    </button>
-                                </td>
+                <div className="bookings-table-container">
+                    <table className="bookings-table">
+                        <thead>
+                            <tr>
+                                <th>Resource</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
                             </tr>
-                        ))}
+                        </thead>
+                        <tbody>
+                            {bookings.map((booking) => (
+                                <tr key={booking.id} className="booking-row">
+                                    <td className="resource-name">
+                                        {booking.resource_name || booking.resource}
+                                    </td>
+                                    <td className="start-time">
+                                        {formatDateTime(booking.start_time)}
+                                    </td>
+                                    <td className="end-time">
+                                        {formatDateTime(booking.end_time)}
+                                    </td>
+                                    <td>
+                                        <span className={`status-badge ${getStatusClass(booking.status)}`}>
+                                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                                        </span>
+                                    </td>
+                                    <td className="booking-notes">
+                                        {booking.notes || '-'}
+                                    </td>
+                                    <td className="actions">
+                                        <Link
+                                            to={`/bookings/edit/${booking.id}`}
+                                            className="edit-button"
+                                            aria-label={`Edit booking for ${booking.resource_name || booking.resource}`}
+                                        >
+                                            Edit
+                                        </Link>
+                                        <button
+                                            onClick={() => handleCancelBooking(booking.id)}
+                                            className="cancel-button"
+                                            disabled={
+                                                cancellingId === booking.id ||
+                                                booking.status === 'cancelled'
+                                            }
+                                            aria-label={`Delete booking for ${booking.resource_name || booking.resource}`}
+                                            title={booking.status === 'cancelled' ? 'Booking already cancelled' : 'Delete this booking'}
+                                        >
+                                            {cancellingId === booking.id ? 'Deleting...' : 'Delete'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
                     </tbody>
                 </table>
             </div>
         </div>
+        </PageLayout>
     );
 }
 

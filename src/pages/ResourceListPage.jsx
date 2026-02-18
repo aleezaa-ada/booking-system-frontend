@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import PageLayout from '../components/PageLayout';
 
 function ResourceListPage() {
     const [resources, setResources] = useState([]);
@@ -27,73 +28,81 @@ function ResourceListPage() {
 
     if (loading) {
         return (
-            <div className="resource-list-page">
-                <h2>Available Resources</h2>
-                <p className="loading-message">Loading resources...</p>
-            </div>
+            <PageLayout>
+                <div className="resource-list-page">
+                    <h2>Available Resources</h2>
+                    <p className="loading-message">Loading resources...</p>
+                </div>
+            </PageLayout>
         );
     }
 
     if (error) {
         return (
-            <div className="resource-list-page">
-                <h2>Available Resources</h2>
-                <div className="error-message">
-                    <p>{error}</p>
-                    <button onClick={fetchResources}>Retry</button>
+            <PageLayout>
+                <div className="resource-list-page">
+                    <h2>Available Resources</h2>
+                    <div className="error-message">
+                        <p>{error}</p>
+                        <button onClick={fetchResources}>Retry</button>
+                    </div>
                 </div>
-            </div>
+            </PageLayout>
         );
     }
 
     if (resources.length === 0) {
         return (
-            <div className="resource-list-page">
-                <h2>Available Resources</h2>
-                <p className="no-resources-message">No resources available at the moment.</p>
-            </div>
+            <PageLayout>
+                <div className="resource-list-page">
+                    <h2>Available Resources</h2>
+                    <p className="no-resources-message">No resources available at the moment.</p>
+                </div>
+            </PageLayout>
         );
     }
 
     return (
-        <div className="resource-list-page">
-            <h2>Available Resources</h2>
-            <div className="resources-container">
-                {resources.map((resource) => (
-                    <div key={resource.id} className="resource-card">
-                        <h3>{resource.name}</h3>
-                        {resource.description && (
-                            <p className="resource-description">{resource.description}</p>
-                        )}
-                        <div className="resource-details">
-                            <p className="resource-capacity">
-                                <strong>Capacity:</strong> {resource.capacity}
-                            </p>
-                            <p className={`resource-status ${resource.is_available ? 'available' : 'unavailable'}`}>
-                                <strong>Status:</strong> {resource.is_available ? 'Available' : 'Unavailable'}
-                            </p>
-                        </div>
-                        {resource.is_available ? (
-                            <Link
-                                to={`/bookings/new/${resource.id}`}
-                                className="book-button"
-                                aria-label={`Book ${resource.name}`}
-                            >
-                                Book Now
-                            </Link>
-                        ) : (
-                            <button
-                                className="book-button disabled"
-                                disabled
-                                aria-label={`${resource.name} is unavailable`}
-                            >
-                                Unavailable
-                            </button>
-                        )}
+        <PageLayout>
+            <div className="resource-list-page">
+                <h2>Available Resources</h2>
+                <div className="resources-container">
+                    {resources.map((resource) => (
+                        <div key={resource.id} className="resource-card">
+                            <h3>{resource.name}</h3>
+                            {resource.description && (
+                                <p className="resource-description">{resource.description}</p>
+                            )}
+                            <div className="resource-details">
+                                <p className="resource-capacity">
+                                    <strong>Capacity:</strong> {resource.capacity}
+                                </p>
+                                <p className={`resource-status ${resource.is_available ? 'available' : 'unavailable'}`}>
+                                    <strong>Status:</strong> {resource.is_available ? 'Available' : 'Unavailable'}
+                                </p>
+                            </div>
+                            {resource.is_available ? (
+                                <Link
+                                    to={`/bookings/new/${resource.id}`}
+                                    className="book-button"
+                                    aria-label={`Book ${resource.name}`}
+                                >
+                                    Book Now
+                                </Link>
+                            ) : (
+                                <button
+                                    className="book-button disabled"
+                                    disabled
+                                    aria-label={`${resource.name} is unavailable`}
+                                >
+                                    Unavailable
+                                </button>
+                            )}
                     </div>
                 ))}
             </div>
         </div>
+        </PageLayout>
     );
 }
 
