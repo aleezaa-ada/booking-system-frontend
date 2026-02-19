@@ -370,17 +370,33 @@ function ResourceListPage() {
                             <p className="resource-capacity">
                                 <strong>Capacity:</strong> {resource.capacity}
                             </p>
-                            <p className={`resource-status ${resource.is_available ? 'available' : 'unavailable'}`}>
-                                <strong>Status:</strong> {resource.is_available ? 'Available' : 'Unavailable'}
+                            <p className={`resource-status ${
+                                resource.availability_status === 'unavailable' ? 'unavailable' : 
+                                resource.availability_status === 'pending' ? 'pending' : 
+                                'available'
+                            }`}>
+                                <strong>Status:</strong> {
+                                    resource.availability_status === 'unavailable' ? 'Unavailable' :
+                                    resource.availability_status === 'pending' ? 'Could be Available' :
+                                    'Available'
+                                }
                             </p>
                         </div>
-                        {resource.is_available ? (
+                        {resource.availability_status === 'available' ? (
                             <Link
                                 to={`/bookings/new/${resource.id}`}
                                 className="book-button"
                                 aria-label={`Book ${resource.name}`}
                             >
                                 Book Now
+                            </Link>
+                        ) : resource.availability_status === 'pending' ? (
+                            <Link
+                                to={`/bookings/new/${resource.id}`}
+                                className="book-button pending"
+                                aria-label={`Book ${resource.name} (pending bookings exist)`}
+                            >
+                                Book Now (Pending)
                             </Link>
                         ) : (
                             <button

@@ -713,6 +713,10 @@
     color: #e74c3c;
 }
 
+.resource-card .resource-status.pending {
+    color: #f39c12;
+}
+
 .resource-card .book-button {
     display: flex;
     align-items: center;

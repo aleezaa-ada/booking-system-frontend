@@ -19,11 +19,12 @@ function LoginPage() {
         try {
             const success = await login(username, password);
             if (success) {
-                navigate('/'); // Redirect to home
+                navigate('/'); 
             } else {
                 setError('Invalid username or password. Please try again.');
             }
         } catch (err) {
+            console.error('Login error:', err);
             setError('An error occurred. Please try again later.');
         } finally {
             setLoading(false);

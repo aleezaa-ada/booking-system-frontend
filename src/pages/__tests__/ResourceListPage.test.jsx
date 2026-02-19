@@ -81,6 +81,7 @@ describe('ResourceListPage', () => {
                 description: 'Large conference room with projector',
                 capacity: 20,
                 is_available: true,
+                availability_status: 'available',
             },
             {
                 id: 2,
@@ -88,6 +89,7 @@ describe('ResourceListPage', () => {
                 description: 'Small meeting room',
                 capacity: 10,
                 is_available: true,
+                availability_status: 'available',
             },
             {
                 id: 3,
@@ -95,6 +97,7 @@ describe('ResourceListPage', () => {
                 description: '',
                 capacity: 1,
                 is_available: false,
+                availability_status: 'unavailable',
             },
         ];
 
@@ -230,7 +233,7 @@ describe('ResourceListPage', () => {
             });
 
             const mockResources = [
-                { id: 1, name: 'Test Resource', description: 'Test', capacity: 5, is_available: true }
+                { id: 1, name: 'Test Resource', description: 'Test', capacity: 5, is_available: true, availability_status: 'available' }
             ];
             api.get.mockResolvedValueOnce({ data: mockResources });
 
@@ -262,6 +265,7 @@ describe('ResourceListPage', () => {
             description: 'Test room',
             capacity: 10,
             is_available: true,
+            availability_status: 'available',
         };
 
         const mockUnavailableResource = {
@@ -270,6 +274,16 @@ describe('ResourceListPage', () => {
             description: 'Out of service',
             capacity: 1,
             is_available: false,
+            availability_status: 'unavailable',
+        };
+
+        const mockPendingResource = {
+            id: 3,
+            name: 'Meeting Room',
+            description: 'Has pending bookings',
+            capacity: 5,
+            is_available: true,
+            availability_status: 'pending',
         };
 
         it('displays "Book Now" link for available resources', async () => {
@@ -280,6 +294,18 @@ describe('ResourceListPage', () => {
                 const bookLink = screen.getByRole('link', { name: /book conference room/i });
                 expect(bookLink).toBeInTheDocument();
                 expect(bookLink).toHaveAttribute('href', `/bookings/new/${mockAvailableResource.id}`);
+            });
+        });
+
+        it('displays "Book Now (Pending)" link for resources with pending status', async () => {
+            api.get.mockResolvedValueOnce({ data: [mockPendingResource] });
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                const bookLink = screen.getByRole('link', { name: /book meeting room \(pending bookings exist\)/i });
+                expect(bookLink).toBeInTheDocument();
+                expect(bookLink).toHaveAttribute('href', `/bookings/new/${mockPendingResource.id}`);
+                expect(bookLink).toHaveTextContent(/book now \(pending\)/i);
             });
         });
 
@@ -316,8 +342,8 @@ describe('ResourceListPage', () => {
             });
         });
 
-        it('applies correct CSS classes to available and unavailable resources', async () => {
-            api.get.mockResolvedValueOnce({ data: [mockAvailableResource, mockUnavailableResource] });
+        it('applies correct CSS classes to available, pending, and unavailable resources', async () => {
+            api.get.mockResolvedValueOnce({ data: [mockAvailableResource, mockPendingResource, mockUnavailableResource] });
             const { container } = renderWithRouter(<ResourceListPage />);
 
             await waitFor(() => {
@@ -325,17 +351,41 @@ describe('ResourceListPage', () => {
             });
 
             const statusElements = container.querySelectorAll('.resource-status');
-            expect(statusElements.length).toBe(2);
+            expect(statusElements.length).toBe(3);
 
             const availableStatus = Array.from(statusElements).find(el =>
-                el.textContent.includes('Available') && !el.textContent.includes('Unavailable')
+                el.textContent === 'Status: Available'
+            );
+            const pendingStatus = Array.from(statusElements).find(el =>
+                el.textContent === 'Status: Could be Available'
             );
             const unavailableStatus = Array.from(statusElements).find(el =>
                 el.textContent === 'Status: Unavailable'
             );
 
             expect(availableStatus).toHaveClass('available');
+            expect(pendingStatus).toHaveClass('pending');
             expect(unavailableStatus).toHaveClass('unavailable');
+        });
+
+        it('displays correct status text for each availability_status', async () => {
+            api.get.mockResolvedValueOnce({ data: [mockAvailableResource, mockPendingResource, mockUnavailableResource] });
+            const { container } = renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Conference Room')).toBeInTheDocument();
+            });
+
+            const statusElements = container.querySelectorAll('.resource-status');
+            expect(statusElements.length).toBe(3);
+
+            const availableText = Array.from(statusElements).find(el => el.textContent.includes('Available') && !el.textContent.includes('Unavailable'));
+            const pendingText = Array.from(statusElements).find(el => el.textContent.includes('Could be Available'));
+            const unavailableText = Array.from(statusElements).find(el => el.textContent.includes('Unavailable'));
+
+            expect(availableText).toBeInTheDocument();
+            expect(pendingText).toBeInTheDocument();
+            expect(unavailableText).toBeInTheDocument();
         });
     });
 
@@ -347,6 +397,7 @@ describe('ResourceListPage', () => {
                 description: 'Description 1',
                 capacity: 5,
                 is_available: true,
+                availability_status: 'available',
             },
             {
                 id: 2,
@@ -354,6 +405,7 @@ describe('ResourceListPage', () => {
                 description: 'Description 2',
                 capacity: 10,
                 is_available: true,
+                availability_status: 'available',
             },
         ];
 
@@ -399,6 +451,7 @@ describe('ResourceListPage', () => {
             description: 'Test Description',
             capacity: 10,
             is_available: true,
+            availability_status: 'available',
         };
 
         it('has accessible heading', async () => {
@@ -422,7 +475,7 @@ describe('ResourceListPage', () => {
         });
 
         it('unavailable button has descriptive aria-label', async () => {
-            const unavailableResource = { ...mockResource, is_available: false };
+            const unavailableResource = { ...mockResource, is_available: false, availability_status: 'unavailable' };
             api.get.mockResolvedValueOnce({ data: [unavailableResource] });
             renderWithRouter(<ResourceListPage />);
 
@@ -441,6 +494,7 @@ describe('ResourceListPage', () => {
                 description: 'No physical capacity',
                 capacity: 0,
                 is_available: true,
+                availability_status: 'available',
             };
             api.get.mockResolvedValueOnce({ data: [resource] });
             renderWithRouter(<ResourceListPage />);
@@ -458,6 +512,7 @@ describe('ResourceListPage', () => {
                 description: 'Large venue',
                 capacity: 50000,
                 is_available: true,
+                availability_status: 'available',
             };
             api.get.mockResolvedValueOnce({ data: [resource] });
             renderWithRouter(<ResourceListPage />);
@@ -475,6 +530,7 @@ describe('ResourceListPage', () => {
                 description: 'Test',
                 capacity: 10,
                 is_available: true,
+                availability_status: 'available',
             };
             api.get.mockResolvedValueOnce({ data: [resource] });
             renderWithRouter(<ResourceListPage />);
@@ -492,6 +548,7 @@ describe('ResourceListPage', () => {
                 description: longDescription,
                 capacity: 10,
                 is_available: true,
+                availability_status: 'available',
             };
             api.get.mockResolvedValueOnce({ data: [resource] });
             const { container } = renderWithRouter(<ResourceListPage />);
@@ -522,6 +579,7 @@ describe('ResourceListPage', () => {
             description: 'Test',
             capacity: 10,
             is_available: true,
+            availability_status: 'available',
         };
 
         it('displays "Add Resource" button for admin users', async () => {
@@ -719,6 +777,7 @@ describe('ResourceListPage', () => {
             description: 'Original description',
             capacity: 10,
             is_available: true,
+            availability_status: 'available',
         };
 
         it('displays edit button for each resource for admin users', async () => {
@@ -821,6 +880,7 @@ describe('ResourceListPage', () => {
             description: 'Test',
             capacity: 10,
             is_available: true,
+            availability_status: 'available',
         };
 
         it('displays delete button for each resource for admin users', async () => {
@@ -947,6 +1007,7 @@ describe('ResourceListPage', () => {
             description: 'Test',
             capacity: 10,
             is_available: true,
+            availability_status: 'available',
         };
 
         it('does not display "Add Resource" button for regular users', async () => {
