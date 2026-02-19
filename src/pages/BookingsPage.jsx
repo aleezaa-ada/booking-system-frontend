@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import PageLayout from '../components/PageLayout';
+import { useAuth } from '../hooks/useAuth';
 
 function BookingsPage() {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [cancellingId, setCancellingId] = useState(null);
+    const { user } = useAuth();
 
     useEffect(() => {
         fetchBookings();
@@ -159,6 +161,7 @@ function BookingsPage() {
                                 <th>Start Time</th>
                                 <th>End Time</th>
                                 <th>Status</th>
+                                {user?.is_staff && <th>Booked By</th>}
                                 <th>Notes</th>
                                 <th>Actions</th>
                             </tr>
@@ -180,6 +183,11 @@ function BookingsPage() {
                                             {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                                         </span>
                                     </td>
+                                    {user?.is_staff && (
+                                        <td className="booked-by">
+                                            {booking.username || '-'}
+                                        </td>
+                                    )}
                                     <td className="booking-notes">
                                         {booking.notes || '-'}
                                     </td>

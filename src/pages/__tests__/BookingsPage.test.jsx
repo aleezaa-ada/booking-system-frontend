@@ -764,4 +764,156 @@ describe('BookingsPage', () => {
             });
         });
     });
+
+    describe('Admin User - Booked By Column', () => {
+        beforeEach(() => {
+            // Mock useAuth to return admin user
+            const { useAuth } = require('../../hooks/useAuth');
+            useAuth.mockReturnValue({
+                user: { id: 1, username: 'admin', email: 'admin@example.com', is_staff: true },
+                logout: jest.fn(),
+                loading: false,
+            });
+        });
+
+        const mockBookingsWithUsers = [
+            {
+                id: 1,
+                resource_name: 'Conference Room A',
+                start_time: '2024-01-15T10:00:00Z',
+                end_time: '2024-01-15T11:00:00Z',
+                status: 'confirmed',
+                notes: 'Team meeting',
+                username: 'johndoe'
+            },
+            {
+                id: 2,
+                resource_name: 'Conference Room B',
+                start_time: '2024-01-16T14:00:00Z',
+                end_time: '2024-01-16T15:00:00Z',
+                status: 'pending',
+                notes: '',
+                username: 'janedoe'
+            },
+        ];
+
+        it('displays "Booked By" column header for admin users', async () => {
+            api.get.mockResolvedValueOnce({ data: mockBookingsWithUsers });
+            renderWithRouter(<BookingsPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Booked By')).toBeInTheDocument();
+            });
+        });
+
+        it('displays usernames in the "Booked By" column', async () => {
+            api.get.mockResolvedValueOnce({ data: mockBookingsWithUsers });
+            renderWithRouter(<BookingsPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('johndoe')).toBeInTheDocument();
+                expect(screen.getByText('janedoe')).toBeInTheDocument();
+            });
+        });
+
+        it('displays dash when username is not available', async () => {
+            const bookingWithoutUsername = [{
+                id: 1,
+                resource_name: 'Conference Room A',
+                start_time: '2024-01-15T10:00:00Z',
+                end_time: '2024-01-15T11:00:00Z',
+                status: 'confirmed',
+                notes: 'Team meeting',
+            }];
+            api.get.mockResolvedValueOnce({ data: bookingWithoutUsername });
+            renderWithRouter(<BookingsPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Conference Room A')).toBeInTheDocument();
+            });
+
+            // Check that "Booked By" column exists
+            expect(screen.getByText('Booked By')).toBeInTheDocument();
+
+            // The dash should be in the booked-by cell
+            const bookedByCells = document.querySelectorAll('.booked-by');
+            expect(bookedByCells.length).toBeGreaterThan(0);
+            expect(bookedByCells[0].textContent).toBe('-');
+        });
+
+        it('displays correct table structure with Booked By column', async () => {
+            api.get.mockResolvedValueOnce({ data: mockBookingsWithUsers });
+            renderWithRouter(<BookingsPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Resource')).toBeInTheDocument();
+                expect(screen.getByText('Start Time')).toBeInTheDocument();
+                expect(screen.getByText('End Time')).toBeInTheDocument();
+                expect(screen.getByText('Status')).toBeInTheDocument();
+                expect(screen.getByText('Booked By')).toBeInTheDocument();
+                expect(screen.getByText('Notes')).toBeInTheDocument();
+                expect(screen.getByText('Actions')).toBeInTheDocument();
+            });
+        });
+    });
+
+    describe('Regular User - No Booked By Column', () => {
+        beforeEach(() => {
+            // Reset mock to return regular user (not staff)
+            const { useAuth } = require('../../hooks/useAuth');
+            useAuth.mockReturnValue({
+                user: { id: 2, username: 'regularuser', email: 'user@example.com', is_staff: false },
+                logout: jest.fn(),
+                loading: false,
+            });
+        });
+
+        const mockBooking = {
+            id: 1,
+            resource_name: 'Conference Room A',
+            start_time: '2024-01-15T10:00:00Z',
+            end_time: '2024-01-15T11:00:00Z',
+            status: 'confirmed',
+            notes: 'Team meeting',
+            username: 'johndoe'
+        };
+
+        it('does not display "Booked By" column header for regular users', async () => {
+            api.get.mockResolvedValueOnce({ data: [mockBooking] });
+            renderWithRouter(<BookingsPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Conference Room A')).toBeInTheDocument();
+            });
+
+            expect(screen.queryByText('Booked By')).not.toBeInTheDocument();
+        });
+
+        it('does not display usernames for regular users', async () => {
+            api.get.mockResolvedValueOnce({ data: [mockBooking] });
+            renderWithRouter(<BookingsPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Conference Room A')).toBeInTheDocument();
+            });
+
+            // Should not see the username in the table
+            expect(screen.queryByText('johndoe')).not.toBeInTheDocument();
+        });
+
+        it('displays correct table structure without Booked By column', async () => {
+            api.get.mockResolvedValueOnce({ data: [mockBooking] });
+            renderWithRouter(<BookingsPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Resource')).toBeInTheDocument();
+                expect(screen.getByText('Start Time')).toBeInTheDocument();
+                expect(screen.getByText('End Time')).toBeInTheDocument();
+                expect(screen.getByText('Status')).toBeInTheDocument();
+                expect(screen.queryByText('Booked By')).not.toBeInTheDocument();
+                expect(screen.getByText('Notes')).toBeInTheDocument();
+                expect(screen.getByText('Actions')).toBeInTheDocument();
+            });
+        });
+    });
 });
