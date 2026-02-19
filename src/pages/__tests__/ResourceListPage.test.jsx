@@ -503,4 +503,473 @@ describe('ResourceListPage', () => {
             });
         });
     });
+
+    describe('Admin - Add Resource Functionality', () => {
+        beforeEach(() => {
+            // Mock useAuth to return admin user
+            const { useAuth } = require('../../hooks/useAuth');
+            useAuth.mockReturnValue({
+                user: { id: 1, username: 'admin', email: 'admin@example.com', is_staff: true },
+                logout: jest.fn(),
+                loading: false,
+            });
+            global.alert = jest.fn();
+        });
+
+        const mockResource = {
+            id: 1,
+            name: 'Test Room',
+            description: 'Test',
+            capacity: 10,
+            is_available: true,
+        };
+
+        it('displays "Add Resource" button for admin users', async () => {
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /add new resource/i })).toBeInTheDocument();
+            });
+        });
+
+        it('opens modal when "Add Resource" button is clicked', async () => {
+            const user = userEvent.setup();
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /add new resource/i })).toBeInTheDocument();
+            });
+
+            const addButton = screen.getByRole('button', { name: /add new resource/i });
+            await user.click(addButton);
+
+            expect(screen.getByRole('heading', { name: /add new resource/i })).toBeInTheDocument();
+        });
+
+        it('displays empty form fields in add modal', async () => {
+            const user = userEvent.setup();
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /add new resource/i })).toBeInTheDocument();
+            });
+
+            const addButton = screen.getByRole('button', { name: /add new resource/i });
+            await user.click(addButton);
+
+            expect(screen.getByLabelText(/resource name/i)).toHaveValue('');
+            expect(screen.getByLabelText(/description/i)).toHaveValue('');
+            expect(screen.getByLabelText(/capacity/i)).toHaveValue(1);
+            expect(screen.getByLabelText(/resource is available/i)).toBeChecked();
+        });
+
+        it('creates new resource successfully', async () => {
+            const user = userEvent.setup();
+            api.get.mockResolvedValueOnce({ data: [] });
+            const newResource = {
+                id: 2,
+                name: 'New Conference Room',
+                description: 'A brand new room',
+                capacity: 15,
+                is_available: true,
+            };
+            api.post.mockResolvedValueOnce({ data: newResource });
+
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /add new resource/i })).toBeInTheDocument();
+            });
+
+            const addButton = screen.getByRole('button', { name: /add new resource/i });
+            await user.click(addButton);
+
+            // Fill in form
+            await user.type(screen.getByLabelText(/resource name/i), 'New Conference Room');
+            await user.type(screen.getByLabelText(/description/i), 'A brand new room');
+            await user.clear(screen.getByLabelText(/capacity/i));
+            await user.type(screen.getByLabelText(/capacity/i), '15');
+
+            // Submit form
+            const submitButton = screen.getByRole('button', { name: /create resource/i });
+            await user.click(submitButton);
+
+            await waitFor(() => {
+                expect(api.post).toHaveBeenCalledWith('/resources/', {
+                    name: 'New Conference Room',
+                    description: 'A brand new room',
+                    capacity: '15',
+                    is_available: true,
+                });
+                expect(global.alert).toHaveBeenCalledWith('Resource created successfully!');
+            });
+        });
+
+        it('validates required fields when creating resource', async () => {
+            const user = userEvent.setup();
+            api.get.mockResolvedValueOnce({ data: [] });
+
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /add new resource/i })).toBeInTheDocument();
+            });
+
+            const addButton = screen.getByRole('button', { name: /add new resource/i });
+            await user.click(addButton);
+
+            // Try to submit without filling required fields
+            const submitButton = screen.getByRole('button', { name: /create resource/i });
+            await user.click(submitButton);
+
+            await waitFor(() => {
+                expect(screen.getByText(/resource name is required/i)).toBeInTheDocument();
+            });
+
+            expect(api.post).not.toHaveBeenCalled();
+        });
+
+        it('closes modal when cancel button is clicked', async () => {
+            const user = userEvent.setup();
+            api.get.mockResolvedValueOnce({ data: [] });
+
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /add new resource/i })).toBeInTheDocument();
+            });
+
+            const addButton = screen.getByRole('button', { name: /add new resource/i });
+            await user.click(addButton);
+
+            expect(screen.getByRole('heading', { name: /add new resource/i })).toBeInTheDocument();
+
+            const cancelButton = screen.getByRole('button', { name: /cancel/i });
+            await user.click(cancelButton);
+
+            await waitFor(() => {
+                expect(screen.queryByRole('heading', { name: /add new resource/i })).not.toBeInTheDocument();
+            });
+        });
+
+        it('closes modal when close X button is clicked', async () => {
+            const user = userEvent.setup();
+            api.get.mockResolvedValueOnce({ data: [] });
+
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /add new resource/i })).toBeInTheDocument();
+            });
+
+            const addButton = screen.getByRole('button', { name: /add new resource/i });
+            await user.click(addButton);
+
+            const closeButton = screen.getByRole('button', { name: /close modal/i });
+            await user.click(closeButton);
+
+            await waitFor(() => {
+                expect(screen.queryByRole('heading', { name: /add new resource/i })).not.toBeInTheDocument();
+            });
+        });
+
+        it('displays error message when resource creation fails', async () => {
+            const user = userEvent.setup();
+            api.get.mockResolvedValueOnce({ data: [] });
+            api.post.mockRejectedValueOnce({
+                response: { data: { detail: 'Resource name already exists' } }
+            });
+
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /add new resource/i })).toBeInTheDocument();
+            });
+
+            const addButton = screen.getByRole('button', { name: /add new resource/i });
+            await user.click(addButton);
+
+            await user.type(screen.getByLabelText(/resource name/i), 'Duplicate Room');
+            const submitButton = screen.getByRole('button', { name: /create resource/i });
+            await user.click(submitButton);
+
+            await waitFor(() => {
+                expect(global.alert).toHaveBeenCalledWith('Resource name already exists');
+            });
+        });
+    });
+
+    describe('Admin - Edit Resource Functionality', () => {
+        beforeEach(() => {
+            const { useAuth } = require('../../hooks/useAuth');
+            useAuth.mockReturnValue({
+                user: { id: 1, username: 'admin', email: 'admin@example.com', is_staff: true },
+                logout: jest.fn(),
+                loading: false,
+            });
+            global.alert = jest.fn();
+        });
+
+        const mockResource = {
+            id: 1,
+            name: 'Test Room',
+            description: 'Original description',
+            capacity: 10,
+            is_available: true,
+        };
+
+        it('displays edit button for each resource for admin users', async () => {
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /edit test room/i })).toBeInTheDocument();
+            });
+        });
+
+        it('opens edit modal with pre-filled data', async () => {
+            const user = userEvent.setup();
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Test Room')).toBeInTheDocument();
+            });
+
+            const editButton = screen.getByRole('button', { name: /edit test room/i });
+            await user.click(editButton);
+
+            expect(screen.getByRole('heading', { name: /edit resource/i })).toBeInTheDocument();
+            expect(screen.getByLabelText(/resource name/i)).toHaveValue('Test Room');
+            expect(screen.getByLabelText(/description/i)).toHaveValue('Original description');
+            expect(screen.getByLabelText(/capacity/i)).toHaveValue(10);
+            expect(screen.getByLabelText(/resource is available/i)).toBeChecked();
+        });
+
+        it('updates resource successfully', async () => {
+            const user = userEvent.setup();
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            api.put.mockResolvedValueOnce({ data: { ...mockResource, name: 'Updated Room' } });
+
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Test Room')).toBeInTheDocument();
+            });
+
+            const editButton = screen.getByRole('button', { name: /edit test room/i });
+            await user.click(editButton);
+
+            const nameInput = screen.getByLabelText(/resource name/i);
+            await user.clear(nameInput);
+            await user.type(nameInput, 'Updated Room');
+
+            const submitButton = screen.getByRole('button', { name: /update resource/i });
+            await user.click(submitButton);
+
+            await waitFor(() => {
+                expect(api.put).toHaveBeenCalledWith('/resources/1/', expect.objectContaining({
+                    name: 'Updated Room',
+                }));
+                expect(global.alert).toHaveBeenCalledWith('Resource updated successfully!');
+            });
+        });
+
+        it('displays error message when resource update fails', async () => {
+            const user = userEvent.setup();
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            api.put.mockRejectedValueOnce({
+                response: { data: { detail: 'Update failed' } }
+            });
+
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Test Room')).toBeInTheDocument();
+            });
+
+            const editButton = screen.getByRole('button', { name: /edit test room/i });
+            await user.click(editButton);
+
+            const submitButton = screen.getByRole('button', { name: /update resource/i });
+            await user.click(submitButton);
+
+            await waitFor(() => {
+                expect(global.alert).toHaveBeenCalledWith('Update failed');
+            });
+        });
+    });
+
+    describe('Admin - Delete Resource Functionality', () => {
+        beforeEach(() => {
+            const { useAuth } = require('../../hooks/useAuth');
+            useAuth.mockReturnValue({
+                user: { id: 1, username: 'admin', email: 'admin@example.com', is_staff: true },
+                logout: jest.fn(),
+                loading: false,
+            });
+            global.alert = jest.fn();
+            global.confirm = jest.fn();
+        });
+
+        const mockResource = {
+            id: 1,
+            name: 'Test Room',
+            description: 'Test',
+            capacity: 10,
+            is_available: true,
+        };
+
+        it('displays delete button for each resource for admin users', async () => {
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByRole('button', { name: /delete test room/i })).toBeInTheDocument();
+            });
+        });
+
+        it('shows confirmation dialog when delete button is clicked', async () => {
+            const user = userEvent.setup();
+            global.confirm.mockReturnValue(false);
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Test Room')).toBeInTheDocument();
+            });
+
+            const deleteButton = screen.getByRole('button', { name: /delete test room/i });
+            await user.click(deleteButton);
+
+            expect(global.confirm).toHaveBeenCalledWith(
+                'Are you sure you want to delete "Test Room"? This action cannot be undone.'
+            );
+        });
+
+        it('does not delete when user cancels confirmation', async () => {
+            const user = userEvent.setup();
+            global.confirm.mockReturnValue(false);
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Test Room')).toBeInTheDocument();
+            });
+
+            const deleteButton = screen.getByRole('button', { name: /delete test room/i });
+            await user.click(deleteButton);
+
+            expect(api.delete).not.toHaveBeenCalled();
+        });
+
+        it('deletes resource successfully', async () => {
+            const user = userEvent.setup();
+            global.confirm.mockReturnValue(true);
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            api.delete.mockResolvedValueOnce({});
+
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Test Room')).toBeInTheDocument();
+            });
+
+            const deleteButton = screen.getByRole('button', { name: /delete test room/i });
+            await user.click(deleteButton);
+
+            await waitFor(() => {
+                expect(api.delete).toHaveBeenCalledWith('/resources/1/');
+                expect(global.alert).toHaveBeenCalledWith('Resource deleted successfully!');
+                expect(screen.queryByText('Test Room')).not.toBeInTheDocument();
+            });
+        });
+
+        it('displays error message when delete fails', async () => {
+            const user = userEvent.setup();
+            global.confirm.mockReturnValue(true);
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            api.delete.mockRejectedValueOnce({
+                response: { data: { detail: 'Cannot delete resource with active bookings' } }
+            });
+
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Test Room')).toBeInTheDocument();
+            });
+
+            const deleteButton = screen.getByRole('button', { name: /delete test room/i });
+            await user.click(deleteButton);
+
+            await waitFor(() => {
+                expect(global.alert).toHaveBeenCalledWith('Cannot delete resource with active bookings');
+            });
+        });
+
+        it('disables delete button while deletion is in progress', async () => {
+            const user = userEvent.setup();
+            global.confirm.mockReturnValue(true);
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            api.delete.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Test Room')).toBeInTheDocument();
+            });
+
+            const deleteButton = screen.getByRole('button', { name: /delete test room/i });
+            await user.click(deleteButton);
+
+            expect(deleteButton).toBeDisabled();
+        });
+    });
+
+    describe('Regular User - No Admin Controls', () => {
+        beforeEach(() => {
+            const { useAuth } = require('../../hooks/useAuth');
+            useAuth.mockReturnValue({
+                user: { id: 2, username: 'regularuser', email: 'user@example.com', is_staff: false },
+                logout: jest.fn(),
+                loading: false,
+            });
+        });
+
+        const mockResource = {
+            id: 1,
+            name: 'Test Room',
+            description: 'Test',
+            capacity: 10,
+            is_available: true,
+        };
+
+        it('does not display "Add Resource" button for regular users', async () => {
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Test Room')).toBeInTheDocument();
+            });
+
+            expect(screen.queryByRole('button', { name: /add new resource/i })).not.toBeInTheDocument();
+        });
+
+        it('does not display edit/delete buttons for regular users', async () => {
+            api.get.mockResolvedValueOnce({ data: [mockResource] });
+            renderWithRouter(<ResourceListPage />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Test Room')).toBeInTheDocument();
+            });
+
+            expect(screen.queryByRole('button', { name: /edit test room/i })).not.toBeInTheDocument();
+            expect(screen.queryByRole('button', { name: /delete test room/i })).not.toBeInTheDocument();
+        });
+    });
 });
