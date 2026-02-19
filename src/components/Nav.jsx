@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import './Nav.css';
+import '../assets/components.css';
 
 function Nav() {
     const { user, logout } = useAuth();

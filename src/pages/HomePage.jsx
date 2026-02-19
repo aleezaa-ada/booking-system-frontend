@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
-import './HomePage.css';
+import '../assets/pages.css';
 
 function HomePage() {
     const { user, logout } = useAuth();

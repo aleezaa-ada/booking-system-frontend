@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import './RegisterPage.css';
+import '../assets/pages.css';
 
 function RegisterPage() {
     const [username, setUsername] = useState('');

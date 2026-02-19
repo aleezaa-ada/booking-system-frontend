@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import './BookingForm.css';
+import '../assets/components.css';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
