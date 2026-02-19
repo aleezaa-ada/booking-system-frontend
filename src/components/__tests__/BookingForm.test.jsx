@@ -259,15 +259,17 @@ describe('BookingForm', () => {
       });
     });
 
-    it('shows status as disabled field for regular users in edit mode', async () => {
+    it('shows status as editable field for regular users in edit mode', async () => {
       api.get.mockResolvedValue({ data: mockBooking });
 
       renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
 
       await waitFor(() => {
-        const statusInput = screen.getByDisplayValue('Pending');
-        expect(statusInput).toBeDisabled();
-        expect(screen.getByText(/only administrators can change booking status/i)).toBeInTheDocument();
+        const statusSelect = screen.getByLabelText(/status/i);
+        expect(statusSelect).toBeInTheDocument();
+        expect(statusSelect.tagName).toBe('SELECT');
+        expect(statusSelect).not.toBeDisabled();
+        expect(screen.getByRole('option', { name: /pending/i })).toBeInTheDocument();
       });
     });
 

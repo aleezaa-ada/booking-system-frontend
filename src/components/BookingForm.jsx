@@ -32,6 +32,7 @@ function BookingForm({ onSuccess }) {
 
     console.log('👤 Current user from context:', user);
     console.log('🔑 Is admin:', isAdmin);
+    console.log('✅ Status editing enabled for all users - Version 2.0');
 
     useEffect(() => {
         const fetchBooking = async () => {
@@ -127,14 +128,18 @@ function BookingForm({ onSuccess }) {
                 notes: notes.trim(),
             };
 
-            // Include status only when editing (and it will be validated on backend)
+            // Include status when editing
             if (isEditMode) {
                 bookingData.status = status;
             }
 
+            console.log('🚀 Submitting booking data:', bookingData);
+            console.log('📝 Status being sent:', status);
+
             if (isEditMode) {
                 // Update existing booking
-                await api.put(`/bookings/${bookingId}/`, bookingData);
+                const response = await api.put(`/bookings/${bookingId}/`, bookingData);
+                console.log('✅ API Response:', response.data);
                 setSuccess(true);
             } else {
                 // Create new booking
@@ -271,35 +276,19 @@ function BookingForm({ onSuccess }) {
 
                 {isEditMode && (
                     <div className="form-group">
-                        <label htmlFor="status">Status {isAdmin && '*'}</label>
-                        {(() => {
-                            console.log('🎨 Rendering status field - isAdmin:', isAdmin, 'status:', status);
-                            return isAdmin ? (
-                                <select
-                                    id="status"
-                                    value={status}
-                                    onChange={(e) => setStatus(e.target.value)}
-                                    disabled={loading}
-                                    required
-                                >
-                                    <option value="pending">Pending</option>
-                                    <option value="confirmed">Confirmed</option>
-                                    <option value="cancelled">Cancelled</option>
-                                    <option value="rejected">Rejected</option>
-                                </select>
-                            ) : (
-                                <>
-                                    <input
-                                        type="text"
-                                        id="status"
-                                        value={status.charAt(0).toUpperCase() + status.slice(1)}
-                                        disabled
-                                        className="disabled-input"
-                                    />
-                                    <small className="form-help">Only administrators can change booking status</small>
-                                </>
-                            );
-                        })()}
+                        <label htmlFor="status">Status *</label>
+                        <select
+                            id="status"
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                            disabled={loading}
+                            required
+                        >
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
                     </div>
                 )}
 
