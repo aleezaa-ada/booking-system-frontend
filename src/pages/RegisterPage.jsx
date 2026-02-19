@@ -18,13 +18,14 @@ function RegisterPage() {
         setLoading(true);
 
         try {
-            const success = await register(username, email, password);
-            if (success) {
+            const result = await register(username, email, password);
+            if (result.success) {
                 navigate('/login'); // Redirect to login after successful registration
             } else {
-                setError('Registration failed. Please check your information and try again.');
+                setError(result.error || 'Registration failed. Please check your information and try again.');
             }
         } catch (err) {
+            console.error('Registration error:', err);
             setError('An error occurred. Please try again later.');
         } finally {
             setLoading(false);

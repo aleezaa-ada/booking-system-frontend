@@ -143,7 +143,7 @@ describe('RegisterPage', () => {
   describe('Form Submission - Success', () => {
     it('calls register function with username, email, and password on form submit', async () => {
       const user = userEvent.setup();
-      const mockRegister = jest.fn().mockResolvedValue(true);
+      const mockRegister = jest.fn().mockResolvedValue({ success: true });
 
       renderWithProviders(<RegisterPage />, {
         authValue: { register: mockRegister },
@@ -166,7 +166,7 @@ describe('RegisterPage', () => {
 
     it('navigates to login page on successful registration', async () => {
       const user = userEvent.setup();
-      const mockRegister = jest.fn().mockResolvedValue(true);
+      const mockRegister = jest.fn().mockResolvedValue({ success: true });
 
       renderWithProviders(<RegisterPage />, {
         authValue: { register: mockRegister },
@@ -189,7 +189,7 @@ describe('RegisterPage', () => {
 
     it('does not show error message on successful registration', async () => {
       const user = userEvent.setup();
-      const mockRegister = jest.fn().mockResolvedValue(true);
+      const mockRegister = jest.fn().mockResolvedValue({ success: true });
 
       renderWithProviders(<RegisterPage />, {
         authValue: { register: mockRegister },
@@ -216,7 +216,7 @@ describe('RegisterPage', () => {
   describe('Form Submission - Failure', () => {
     it('shows error message on failed registration', async () => {
       const user = userEvent.setup();
-      const mockRegister = jest.fn().mockResolvedValue(false);
+      const mockRegister = jest.fn().mockResolvedValue({ success: false });
 
       renderWithProviders(<RegisterPage />, {
         authValue: { register: mockRegister },
@@ -239,7 +239,7 @@ describe('RegisterPage', () => {
 
     it('does not navigate on failed registration', async () => {
       const user = userEvent.setup();
-      const mockRegister = jest.fn().mockResolvedValue(false);
+      const mockRegister = jest.fn().mockResolvedValue({ success: false });
 
       renderWithProviders(<RegisterPage />, {
         authValue: { register: mockRegister },
@@ -264,7 +264,7 @@ describe('RegisterPage', () => {
 
     it('calls register function only once per submit', async () => {
       const user = userEvent.setup();
-      const mockRegister = jest.fn().mockResolvedValue(false);
+      const mockRegister = jest.fn().mockResolvedValue({ success: false });
 
       renderWithProviders(<RegisterPage />, {
         authValue: { register: mockRegister },

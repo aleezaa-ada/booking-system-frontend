@@ -42,10 +42,44 @@ export const AuthProvider = ({ children }) => {
     const register = async (username, email, password) => {
         try {
             await api.post('auth/users/', { username, email, password });
-            return true;
+            return { success: true };
         } catch (error) {
             console.error("Registration failed:", error.response?.data || error.message);
-            return false;
+
+            // Extract specific error messages from the backend
+            const errorData = error.response?.data || {};
+            let errorMessage = '';
+
+            // Check for email errors
+            if (errorData.email) {
+                errorMessage = Array.isArray(errorData.email)
+                    ? errorData.email[0]
+                    : errorData.email;
+            }
+            // Check for username errors
+            else if (errorData.username) {
+                errorMessage = Array.isArray(errorData.username)
+                    ? errorData.username[0]
+                    : errorData.username;
+            }
+            // Check for password errors
+            else if (errorData.password) {
+                errorMessage = Array.isArray(errorData.password)
+                    ? errorData.password[0]
+                    : errorData.password;
+            }
+            // Check for non_field_errors
+            else if (errorData.non_field_errors) {
+                errorMessage = Array.isArray(errorData.non_field_errors)
+                    ? errorData.non_field_errors[0]
+                    : errorData.non_field_errors;
+            }
+            // Generic error message
+            else {
+                errorMessage = 'Registration failed. Please check your information and try again.';
+            }
+
+            return { success: false, error: errorMessage };
         }
     };
 
