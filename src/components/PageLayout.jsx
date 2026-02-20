@@ -3,14 +3,12 @@ import Nav from './Nav';
 import '../assets/components.css';
 
 function PageLayout({ children, className = '' }) {
-    return (
-        <div className="page-layout">
-            <Nav />
-            <main className={`page-content ${className}`}>
-                {children}
-            </main>
-        </div>
-    );
+  return (
+    <div className="page-layout">
+      <Nav />
+      <main className={`page-content ${className}`}>{children}</main>
+    </div>
+  );
 }
 
 export default PageLayout;

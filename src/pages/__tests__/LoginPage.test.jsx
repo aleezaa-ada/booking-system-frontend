@@ -29,12 +29,12 @@ const renderWithProviders = (ui, { authValue, ...renderOptions } = {}) => {
     loading: false,
   };
 
-  AuthContextModule.useAuth.mockReturnValue({ ...defaultAuthValue, ...authValue });
+  AuthContextModule.useAuth.mockReturnValue({
+    ...defaultAuthValue,
+    ...authValue,
+  });
 
-  return render(
-    <BrowserRouter>{ui}</BrowserRouter>,
-    renderOptions
-  );
+  return render(<BrowserRouter>{ui}</BrowserRouter>, renderOptions);
 };
 
 describe('LoginPage', () => {
@@ -45,7 +45,9 @@ describe('LoginPage', () => {
   describe('Rendering', () => {
     it('renders login heading', () => {
       renderWithProviders(<LoginPage />);
-      expect(screen.getByRole('heading', { name: /welcome back/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /welcome back/i })
+      ).toBeInTheDocument();
     });
 
     it('renders username input field', () => {
@@ -66,7 +68,9 @@ describe('LoginPage', () => {
 
     it('renders login button', () => {
       renderWithProviders(<LoginPage />);
-      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /login/i })
+      ).toBeInTheDocument();
     });
 
     it('has a form element', () => {
@@ -113,8 +117,12 @@ describe('LoginPage', () => {
     it('starts with empty input fields', () => {
       renderWithProviders(<LoginPage />);
 
-      expect(screen.getByPlaceholderText(/enter your username/i)).toHaveValue('');
-      expect(screen.getByPlaceholderText(/enter your password/i)).toHaveValue('');
+      expect(screen.getByPlaceholderText(/enter your username/i)).toHaveValue(
+        ''
+      );
+      expect(screen.getByPlaceholderText(/enter your password/i)).toHaveValue(
+        ''
+      );
     });
   });
 
@@ -203,7 +211,9 @@ describe('LoginPage', () => {
       await user.click(loginButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/invalid username or password/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/invalid username or password/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -282,7 +292,9 @@ describe('LoginPage', () => {
   describe('Navigation', () => {
     it('displays link to registration page', () => {
       renderWithProviders(<LoginPage />);
-      const registerLink = screen.getByRole('link', { name: /Create Account/i });
+      const registerLink = screen.getByRole('link', {
+        name: /Create Account/i,
+      });
       expect(registerLink).toBeInTheDocument();
       expect(registerLink).toHaveAttribute('href', '/register');
     });

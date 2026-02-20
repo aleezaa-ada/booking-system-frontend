@@ -11,21 +11,49 @@ import BookingForm from './components/BookingForm';
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {
-    return (
-        <Router>
-            <AuthProvider>
-                <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    {/* Protected routes, will redirect to login page if not logged in*/}
-                    <Route path="/bookings" element={<PrivateRoute><BookingsPage /></PrivateRoute>} />
-                    <Route path="/bookings/new/:resourceId" element={<PrivateRoute><BookingForm /></PrivateRoute>} />
-                    <Route path="/bookings/edit/:bookingId" element={<PrivateRoute><BookingForm /></PrivateRoute>} />
-                    <Route path="/resources" element={<PrivateRoute><ResourceListPage /></PrivateRoute>} />
-                </Routes>
-            </AuthProvider>
-        </Router>
-    );
+  return (
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          {/* Protected routes, will redirect to login page if not logged in*/}
+          <Route
+            path="/bookings"
+            element={
+              <PrivateRoute>
+                <BookingsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/bookings/new/:resourceId"
+            element={
+              <PrivateRoute>
+                <BookingForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/bookings/edit/:bookingId"
+            element={
+              <PrivateRoute>
+                <BookingForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/resources"
+            element={
+              <PrivateRoute>
+                <ResourceListPage />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </AuthProvider>
+    </Router>
+  );
 }
 export default App;

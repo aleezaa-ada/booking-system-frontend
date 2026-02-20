@@ -19,10 +19,7 @@ const renderWithProviders = (ui, { authValue, ...renderOptions } = {}) => {
 
   useAuthModule.useAuth.mockReturnValue({ ...defaultAuthValue, ...authValue });
 
-  return render(
-    <BrowserRouter>{ui}</BrowserRouter>,
-    renderOptions
-  );
+  return render(<BrowserRouter>{ui}</BrowserRouter>, renderOptions);
 };
 
 describe('HomePage', () => {
@@ -33,12 +30,18 @@ describe('HomePage', () => {
   describe('when user is not logged in', () => {
     it('renders welcome message', () => {
       renderWithProviders(<HomePage />);
-      expect(screen.getByText('Welcome to the Booking System')).toBeInTheDocument();
+      expect(
+        screen.getByText('Welcome to the Booking System')
+      ).toBeInTheDocument();
     });
 
     it('shows login prompt message', () => {
       renderWithProviders(<HomePage />);
-      expect(screen.getByText('Please log in or create an account to start booking resources.')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Please log in or create an account to start booking resources.'
+        )
+      ).toBeInTheDocument();
     });
 
     it('displays login link', () => {
@@ -57,13 +60,19 @@ describe('HomePage', () => {
 
     it('does not show logout button when not logged in', () => {
       renderWithProviders(<HomePage />);
-      expect(screen.queryByRole('button', { name: /logout/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /logout/i })
+      ).not.toBeInTheDocument();
     });
 
     it('does not show authenticated navigation links', () => {
       renderWithProviders(<HomePage />);
-      expect(screen.queryByRole('link', { name: /my bookings/i })).not.toBeInTheDocument();
-      expect(screen.queryByRole('link', { name: /view resources/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('link', { name: /my bookings/i })
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('link', { name: /view resources/i })
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -79,7 +88,9 @@ describe('HomePage', () => {
       renderWithProviders(<HomePage />, {
         authValue: { user: mockUser, logout: mockLogout },
       });
-      expect(screen.getByText('Welcome to the Booking System')).toBeInTheDocument();
+      expect(
+        screen.getByText('Welcome to the Booking System')
+      ).toBeInTheDocument();
     });
 
     it('displays personalized greeting with username', () => {
@@ -95,7 +106,9 @@ describe('HomePage', () => {
       renderWithProviders(<HomePage />, {
         authValue: { user: mockUser, logout: mockLogout },
       });
-      expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /logout/i })
+      ).toBeInTheDocument();
     });
 
     it('calls logout function when logout button is clicked', () => {
@@ -120,7 +133,9 @@ describe('HomePage', () => {
       renderWithProviders(<HomePage />, {
         authValue: { user: mockUser, logout: mockLogout },
       });
-      const resourcesLink = screen.getByRole('link', { name: /Browse Resources/i });
+      const resourcesLink = screen.getByRole('link', {
+        name: /Browse Resources/i,
+      });
       expect(resourcesLink).toBeInTheDocument();
       expect(resourcesLink).toHaveAttribute('href', '/resources');
     });
@@ -129,22 +144,30 @@ describe('HomePage', () => {
       renderWithProviders(<HomePage />, {
         authValue: { user: mockUser, logout: mockLogout },
       });
-      expect(screen.queryByRole('link', { name: /^login$/i })).not.toBeInTheDocument();
-      expect(screen.queryByRole('link', { name: /^register$/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('link', { name: /^login$/i })
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('link', { name: /^register$/i })
+      ).not.toBeInTheDocument();
     });
 
     it('does not show login prompt when logged in', () => {
       renderWithProviders(<HomePage />, {
         authValue: { user: mockUser, logout: mockLogout },
       });
-      expect(screen.queryByText('Please log in or register.')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Please log in or register.')
+      ).not.toBeInTheDocument();
     });
   });
 
   describe('accessibility', () => {
     it('has proper heading structure', () => {
       renderWithProviders(<HomePage />);
-      const heading = screen.getByRole('heading', { name: /welcome to the booking system/i });
+      const heading = screen.getByRole('heading', {
+        name: /welcome to the booking system/i,
+      });
       expect(heading).toBeInTheDocument();
       expect(heading.tagName).toBe('H1');
     });

@@ -21,7 +21,10 @@ const renderWithRouter = (ui, { route = '/', authValue } = {}) => {
     loading: false,
   };
 
-  AuthContextModule.useAuth.mockReturnValue({ ...defaultAuthValue, ...authValue });
+  AuthContextModule.useAuth.mockReturnValue({
+    ...defaultAuthValue,
+    ...authValue,
+  });
 
   window.history.pushState({}, 'Test page', route);
 

@@ -28,12 +28,23 @@ export default defineConfig([
   },
   // Jest/Testing configuration
   {
-    files: ['**/__tests__/**/*.{js,jsx}', '**/*.test.{js,jsx}', '**/*.spec.{js,jsx}', '**/babel.config.cjs', '**/jest.config.cjs', 'jest.setup.js'],
+    files: [
+      '**/__tests__/**/*.{js,jsx}',
+      '**/*.test.{js,jsx}',
+      '**/*.spec.{js,jsx}',
+      '**/__mocks__/**/*.{js,jsx}',
+      '**/babel.config.cjs',
+      '**/jest.config.cjs',
+      'jest.setup.js'
+    ],
     languageOptions: {
       globals: {
         ...globals.jest,
         ...globals.node,
       },
+    },
+    rules: {
+      'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]|^_' }],
     },
   },
 ])

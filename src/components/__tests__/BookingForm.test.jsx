@@ -15,29 +15,34 @@ jest.mock('../../hooks/useAuth');
 // Mock react-datepicker
 jest.mock('react-datepicker', () => ({
   __esModule: true,
-  default: require('react').forwardRef(({ selected, onChange, placeholderText, id, disabled }, ref) => {
-    const React = require('react');
-    return React.createElement('input', {
-      ref: ref,
-      type: 'text',
-      id: id,
-      value: selected && selected instanceof Date && !isNaN(selected.getTime()) ? selected.toISOString() : '',
-      onChange: (e) => {
-        if (e.target.value) {
-          const date = new Date(e.target.value);
-          if (!isNaN(date.getTime())) {
-            onChange(date);
+  default: require('react').forwardRef(
+    ({ selected, onChange, placeholderText, id, disabled }, ref) => {
+      const React = require('react');
+      return React.createElement('input', {
+        ref: ref,
+        type: 'text',
+        id: id,
+        value:
+          selected && selected instanceof Date && !isNaN(selected.getTime())
+            ? selected.toISOString()
+            : '',
+        onChange: e => {
+          if (e.target.value) {
+            const date = new Date(e.target.value);
+            if (!isNaN(date.getTime())) {
+              onChange(date);
+            }
+          } else {
+            onChange(null);
           }
-        } else {
-          onChange(null);
-        }
-      },
-      placeholder: placeholderText,
-      disabled: disabled,
-      'aria-label': placeholderText,
-      'data-testid': `datepicker-${id}`,
-    });
-  }),
+        },
+        placeholder: placeholderText,
+        disabled: disabled,
+        'aria-label': placeholderText,
+        'data-testid': `datepicker-${id}`,
+      });
+    }
+  ),
 }));
 
 // Mock useNavigate
@@ -106,7 +111,12 @@ describe('BookingForm', () => {
 
     // Default mock for useAuth - regular user
     AuthHook.useAuth.mockReturnValue({
-      user: { id: 1, username: 'testuser', email: 'test@example.com', is_staff: false },
+      user: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        is_staff: false,
+      },
     });
   });
 
@@ -121,16 +131,24 @@ describe('BookingForm', () => {
       renderWithRouter(<BookingForm />);
 
       await waitFor(() => {
-        expect(screen.queryByText(/loading resources/i)).not.toBeInTheDocument();
+        expect(
+          screen.queryByText(/loading resources/i)
+        ).not.toBeInTheDocument();
       });
 
-      expect(screen.getByRole('heading', { name: /create a booking/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /create a booking/i })
+      ).toBeInTheDocument();
       expect(screen.getByLabelText(/resource/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/start time/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/end time/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/notes/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /create booking/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /create booking/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /cancel/i })
+      ).toBeInTheDocument();
     });
 
     it('shows loading message while fetching resources', () => {
@@ -165,7 +183,9 @@ describe('BookingForm', () => {
       renderWithRouter(<BookingForm />);
 
       await waitFor(() => {
-        expect(screen.getByText(/failed to fetch resources/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/failed to fetch resources/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -180,14 +200,18 @@ describe('BookingForm', () => {
     it('fetches and displays existing booking data', async () => {
       api.get.mockResolvedValue({ data: mockBooking });
 
-      renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
+      renderWithRouter(<BookingForm />, {
+        initialEntries: ['/bookings/edit/8'],
+      });
 
       await waitFor(() => {
         expect(api.get).toHaveBeenCalledWith('/bookings/8/');
       });
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /edit booking/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('heading', { name: /edit booking/i })
+        ).toBeInTheDocument();
         expect(screen.getByDisplayValue('Meeting Room A')).toBeInTheDocument();
         expect(screen.getByDisplayValue('Test notes')).toBeInTheDocument();
       });
@@ -196,7 +220,9 @@ describe('BookingForm', () => {
     it('shows loading message while fetching booking', () => {
       api.get.mockImplementation(() => new Promise(() => {}));
 
-      renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
+      renderWithRouter(<BookingForm />, {
+        initialEntries: ['/bookings/edit/8'],
+      });
 
       expect(screen.getByText(/loading booking details/i)).toBeInTheDocument();
     });
@@ -204,37 +230,51 @@ describe('BookingForm', () => {
     it('displays error when fetching booking fails', async () => {
       api.get.mockRejectedValue(new Error('Not found'));
 
-      renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
+      renderWithRouter(<BookingForm />, {
+        initialEntries: ['/bookings/edit/8'],
+      });
 
       await waitFor(() => {
-        expect(screen.getByText(/failed to fetch booking details/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/failed to fetch booking details/i)
+        ).toBeInTheDocument();
       });
     });
 
     it('formats datetime correctly for DatePicker', async () => {
       api.get.mockResolvedValue({ data: mockBooking });
 
-      renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
+      renderWithRouter(<BookingForm />, {
+        initialEntries: ['/bookings/edit/8'],
+      });
 
       await waitFor(() => {
         const startInput = screen.getByTestId('datepicker-start_time');
         const endInput = screen.getByTestId('datepicker-end_time');
 
         // Should be in ISO format (toISOString())
-        expect(startInput.value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
-        expect(endInput.value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+        expect(startInput.value).toMatch(
+          /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+        );
+        expect(endInput.value).toMatch(
+          /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+        );
       });
     });
 
     it('shows resource as disabled field in edit mode', async () => {
       api.get.mockResolvedValue({ data: mockBooking });
 
-      renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
+      renderWithRouter(<BookingForm />, {
+        initialEntries: ['/bookings/edit/8'],
+      });
 
       await waitFor(() => {
         const resourceInput = screen.getByDisplayValue('Meeting Room A');
         expect(resourceInput).toBeDisabled();
-        expect(screen.getByText(/resource cannot be changed when editing/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/resource cannot be changed when editing/i)
+        ).toBeInTheDocument();
       });
     });
   });
@@ -242,34 +282,53 @@ describe('BookingForm', () => {
   describe('Status Field - Admin vs Regular User', () => {
     it('shows status dropdown for admin users in edit mode', async () => {
       AuthHook.useAuth.mockReturnValue({
-        user: { id: 1, username: 'admin', email: 'admin@example.com', is_staff: true },
+        user: {
+          id: 1,
+          username: 'admin',
+          email: 'admin@example.com',
+          is_staff: true,
+        },
       });
       api.get.mockResolvedValue({ data: mockBooking });
 
-      renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
+      renderWithRouter(<BookingForm />, {
+        initialEntries: ['/bookings/edit/8'],
+      });
 
       await waitFor(() => {
         const statusSelect = screen.getByLabelText(/status/i);
         expect(statusSelect).toBeInTheDocument();
         expect(statusSelect.tagName).toBe('SELECT');
-        expect(screen.getByRole('option', { name: /pending/i })).toBeInTheDocument();
-        expect(screen.getByRole('option', { name: /confirmed/i })).toBeInTheDocument();
-        expect(screen.getByRole('option', { name: /cancelled/i })).toBeInTheDocument();
-        expect(screen.getByRole('option', { name: /rejected/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('option', { name: /pending/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('option', { name: /confirmed/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('option', { name: /cancelled/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('option', { name: /rejected/i })
+        ).toBeInTheDocument();
       });
     });
 
     it('shows status as editable field for regular users in edit mode', async () => {
       api.get.mockResolvedValue({ data: mockBooking });
 
-      renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
+      renderWithRouter(<BookingForm />, {
+        initialEntries: ['/bookings/edit/8'],
+      });
 
       await waitFor(() => {
         const statusSelect = screen.getByLabelText(/status/i);
         expect(statusSelect).toBeInTheDocument();
         expect(statusSelect.tagName).toBe('SELECT');
         expect(statusSelect).not.toBeDisabled();
-        expect(screen.getByRole('option', { name: /pending/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('option', { name: /pending/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -291,12 +350,14 @@ describe('BookingForm', () => {
       api.get.mockResolvedValue({ data: mockResources });
       renderWithRouter(<BookingForm />);
       await waitFor(() => {
-        expect(screen.queryByText(/loading resources/i)).not.toBeInTheDocument();
+        expect(
+          screen.queryByText(/loading resources/i)
+        ).not.toBeInTheDocument();
       });
     });
 
     it('shows error when submitting without selecting a resource', async () => {
-      const user = userEvent.setup({ delay: null });
+      const _user = userEvent.setup({ delay: null });
 
       const startTimeInput = screen.getByTestId('datepicker-start_time');
       setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
@@ -304,12 +365,20 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
-      const form = screen.getByRole('heading', { name: /create a booking/i }).closest('div').querySelector('form');
-      const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+      const form = screen
+        .getByRole('heading', { name: /create a booking/i })
+        .closest('div')
+        .querySelector('form');
+      const submitEvent = new Event('submit', {
+        bubbles: true,
+        cancelable: true,
+      });
       form.dispatchEvent(submitEvent);
 
       await waitFor(() => {
-        expect(screen.getByText(/please select a resource/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/please select a resource/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -322,12 +391,20 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
-      const form = screen.getByRole('heading', { name: /create a booking/i }).closest('div').querySelector('form');
-      const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+      const form = screen
+        .getByRole('heading', { name: /create a booking/i })
+        .closest('div')
+        .querySelector('form');
+      const submitEvent = new Event('submit', {
+        bubbles: true,
+        cancelable: true,
+      });
       form.dispatchEvent(submitEvent);
 
       await waitFor(() => {
-        expect(screen.getByText(/please select a start time/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/please select a start time/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -341,12 +418,20 @@ describe('BookingForm', () => {
       setDatePickerValue(startTimeInput, '2026-02-20T10:00:00.000Z');
 
       // Manually trigger form submission to bypass HTML5 validation
-      const form = screen.getByRole('heading', { name: /create a booking/i }).closest('div').querySelector('form');
-      const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+      const form = screen
+        .getByRole('heading', { name: /create a booking/i })
+        .closest('div')
+        .querySelector('form');
+      const submitEvent = new Event('submit', {
+        bubbles: true,
+        cancelable: true,
+      });
       form.dispatchEvent(submitEvent);
 
       await waitFor(() => {
-        expect(screen.getByText(/please select an end time/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/please select an end time/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -362,11 +447,15 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-20T10:00:00.000Z');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/end time must be after start time/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/end time must be after start time/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -382,11 +471,15 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-17T12:00:00.000Z');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/start time cannot be in the past/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/start time cannot be in the past/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -394,22 +487,32 @@ describe('BookingForm', () => {
       api.get.mockResolvedValue({ data: mockBooking });
       api.put.mockResolvedValue({ data: { ...mockBooking } });
 
-      renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
+      renderWithRouter(<BookingForm />, {
+        initialEntries: ['/bookings/edit/8'],
+      });
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /edit booking/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('heading', { name: /edit booking/i })
+        ).toBeInTheDocument();
       });
 
       const user = userEvent.setup({ delay: null });
-      const submitButton = screen.getByRole('button', { name: /update booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /update booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/booking updated successfully/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/booking updated successfully/i)
+        ).toBeInTheDocument();
       });
 
       // Should not show past time error
-      expect(screen.queryByText(/start time cannot be in the past/i)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/start time cannot be in the past/i)
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -418,7 +521,9 @@ describe('BookingForm', () => {
       api.get.mockResolvedValue({ data: mockResources });
       renderWithRouter(<BookingForm />);
       await waitFor(() => {
-        expect(screen.queryByText(/loading resources/i)).not.toBeInTheDocument();
+        expect(
+          screen.queryByText(/loading resources/i)
+        ).not.toBeInTheDocument();
       });
     });
 
@@ -438,7 +543,9 @@ describe('BookingForm', () => {
       const notesInput = screen.getByLabelText(/notes/i);
       await user.type(notesInput, 'Team meeting');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -451,7 +558,9 @@ describe('BookingForm', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/booking created successfully/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/booking created successfully/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -471,13 +580,18 @@ describe('BookingForm', () => {
       const notesInput = screen.getByLabelText(/notes/i);
       await user.type(notesInput, '  Important meeting  ');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(api.post).toHaveBeenCalledWith('/bookings/', expect.objectContaining({
-          notes: 'Important meeting',
-        }));
+        expect(api.post).toHaveBeenCalledWith(
+          '/bookings/',
+          expect.objectContaining({
+            notes: 'Important meeting',
+          })
+        );
       });
     });
 
@@ -497,11 +611,15 @@ describe('BookingForm', () => {
       const notesInput = screen.getByLabelText(/notes/i);
       await user.type(notesInput, 'Test notes');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/booking created successfully/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/booking created successfully/i)
+        ).toBeInTheDocument();
       });
 
       // Form should be reset
@@ -513,7 +631,9 @@ describe('BookingForm', () => {
 
     it('disables form fields while submitting', async () => {
       const user = userEvent.setup({ delay: null });
-      api.post.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1000)));
+      api.post.mockImplementation(
+        () => new Promise(resolve => setTimeout(resolve, 1000))
+      );
 
       const resourceSelect = screen.getByLabelText(/resource/i);
       await user.selectOptions(resourceSelect, '1');
@@ -524,7 +644,9 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       // Fields should be disabled during submission
@@ -532,19 +654,27 @@ describe('BookingForm', () => {
       expect(startTimeInput).toBeDisabled();
       expect(endTimeInput).toBeDisabled();
       expect(screen.getByLabelText(/notes/i)).toBeDisabled();
-      expect(screen.getByRole('button', { name: /creating booking/i })).toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: /creating booking/i })
+      ).toBeDisabled();
     });
   });
 
   describe('Form Submission - Edit Mode', () => {
     it('successfully updates a booking', async () => {
       api.get.mockResolvedValue({ data: mockBooking });
-      api.put.mockResolvedValue({ data: { ...mockBooking, notes: 'Updated notes' } });
+      api.put.mockResolvedValue({
+        data: { ...mockBooking, notes: 'Updated notes' },
+      });
 
-      renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
+      renderWithRouter(<BookingForm />, {
+        initialEntries: ['/bookings/edit/8'],
+      });
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /edit booking/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('heading', { name: /edit booking/i })
+        ).toBeInTheDocument();
       });
 
       const user = userEvent.setup({ delay: null });
@@ -552,45 +682,68 @@ describe('BookingForm', () => {
       await user.clear(notesInput);
       await user.type(notesInput, 'Updated notes');
 
-      const submitButton = screen.getByRole('button', { name: /update booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /update booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(api.put).toHaveBeenCalledWith('/bookings/8/', expect.objectContaining({
-          notes: 'Updated notes',
-          status: 'pending',
-        }));
+        expect(api.put).toHaveBeenCalledWith(
+          '/bookings/8/',
+          expect.objectContaining({
+            notes: 'Updated notes',
+            status: 'pending',
+          })
+        );
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/booking updated successfully/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/booking updated successfully/i)
+        ).toBeInTheDocument();
       });
     });
 
     it('includes status when admin updates booking', async () => {
       AuthHook.useAuth.mockReturnValue({
-        user: { id: 1, username: 'admin', email: 'admin@example.com', is_staff: true },
+        user: {
+          id: 1,
+          username: 'admin',
+          email: 'admin@example.com',
+          is_staff: true,
+        },
       });
       api.get.mockResolvedValue({ data: mockBooking });
-      api.put.mockResolvedValue({ data: { ...mockBooking, status: 'confirmed' } });
+      api.put.mockResolvedValue({
+        data: { ...mockBooking, status: 'confirmed' },
+      });
 
-      renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
+      renderWithRouter(<BookingForm />, {
+        initialEntries: ['/bookings/edit/8'],
+      });
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /edit booking/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('heading', { name: /edit booking/i })
+        ).toBeInTheDocument();
       });
 
       const user = userEvent.setup({ delay: null });
       const statusSelect = screen.getByLabelText(/status/i);
       await user.selectOptions(statusSelect, 'confirmed');
 
-      const submitButton = screen.getByRole('button', { name: /update booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /update booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(api.put).toHaveBeenCalledWith('/bookings/8/', expect.objectContaining({
-          status: 'confirmed',
-        }));
+        expect(api.put).toHaveBeenCalledWith(
+          '/bookings/8/',
+          expect.objectContaining({
+            status: 'confirmed',
+          })
+        );
       });
     });
 
@@ -598,18 +751,24 @@ describe('BookingForm', () => {
       api.get.mockResolvedValue({ data: mockBooking });
       api.put.mockResolvedValue({ data: mockBooking });
 
-      renderWithRouter(<BookingForm />, { initialEntries: ['/bookings/edit/8'] });
+      renderWithRouter(<BookingForm />, {
+        initialEntries: ['/bookings/edit/8'],
+      });
 
       await waitFor(() => {
         expect(screen.getByDisplayValue('Test notes')).toBeInTheDocument();
       });
 
       const user = userEvent.setup({ delay: null });
-      const submitButton = screen.getByRole('button', { name: /update booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /update booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/booking updated successfully/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/booking updated successfully/i)
+        ).toBeInTheDocument();
       });
 
       // Form should not be reset
@@ -622,7 +781,9 @@ describe('BookingForm', () => {
       api.get.mockResolvedValue({ data: mockResources });
       renderWithRouter(<BookingForm />);
       await waitFor(() => {
-        expect(screen.queryByText(/loading resources/i)).not.toBeInTheDocument();
+        expect(
+          screen.queryByText(/loading resources/i)
+        ).not.toBeInTheDocument();
       });
     });
 
@@ -631,7 +792,9 @@ describe('BookingForm', () => {
       api.post.mockRejectedValue({
         response: {
           data: {
-            non_field_errors: ['This resource is already booked for the selected time slot.'],
+            non_field_errors: [
+              'This resource is already booked for the selected time slot.',
+            ],
           },
         },
       });
@@ -645,11 +808,15 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/this resource is already booked/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/this resource is already booked/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -672,11 +839,17 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/cannot create booking - resource is already booked/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(
+            /cannot create booking - resource is already booked/i
+          )
+        ).toBeInTheDocument();
       });
     });
 
@@ -700,7 +873,9 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -723,11 +898,15 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/failed to create booking/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/failed to create booking/i)
+        ).toBeInTheDocument();
       });
     });
   });
@@ -770,11 +949,15 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/booking created successfully/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/booking created successfully/i)
+        ).toBeInTheDocument();
       });
 
       // Fast-forward timers to trigger navigation
@@ -796,7 +979,9 @@ describe('BookingForm', () => {
       renderWithRouter(<BookingForm onSuccess={mockOnSuccess} />);
 
       await waitFor(() => {
-        expect(screen.queryByText(/loading resources/i)).not.toBeInTheDocument();
+        expect(
+          screen.queryByText(/loading resources/i)
+        ).not.toBeInTheDocument();
       });
 
       const resourceSelect = screen.getByLabelText(/resource/i);
@@ -808,7 +993,9 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -842,13 +1029,18 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(api.post).toHaveBeenCalledWith('/bookings/', expect.objectContaining({
-          resource: 5,
-        }));
+        expect(api.post).toHaveBeenCalledWith(
+          '/bookings/',
+          expect.objectContaining({
+            resource: 5,
+          })
+        );
       });
     });
   });
@@ -860,8 +1052,14 @@ describe('BookingForm', () => {
       renderWithRouter(<BookingForm />);
 
       await waitFor(() => {
-        expect(console.log).toHaveBeenCalledWith('👤 Current user from context:', expect.any(Object));
-        expect(console.log).toHaveBeenCalledWith('🔑 Is admin:', expect.any(Boolean));
+        expect(console.log).toHaveBeenCalledWith(
+          '👤 Current user from context:',
+          expect.any(Object)
+        );
+        expect(console.log).toHaveBeenCalledWith(
+          '🔑 Is admin:',
+          expect.any(Boolean)
+        );
       });
     });
 
@@ -872,7 +1070,10 @@ describe('BookingForm', () => {
       renderWithRouter(<BookingForm />);
 
       await waitFor(() => {
-        expect(console.error).toHaveBeenCalledWith('Error fetching resources:', error);
+        expect(console.error).toHaveBeenCalledWith(
+          'Error fetching resources:',
+          error
+        );
       });
     });
 
@@ -898,11 +1099,16 @@ describe('BookingForm', () => {
       const endTimeInput = screen.getByTestId('datepicker-end_time');
       setDatePickerValue(endTimeInput, '2026-02-20T12:00:00.000Z');
 
-      const submitButton = screen.getByRole('button', { name: /create booking/i });
+      const submitButton = screen.getByRole('button', {
+        name: /create booking/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(console.error).toHaveBeenCalledWith('Error response data:', errorResponse);
+        expect(console.error).toHaveBeenCalledWith(
+          'Error response data:',
+          errorResponse
+        );
       });
     });
   });
