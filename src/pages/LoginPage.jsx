@@ -68,6 +68,18 @@ function LoginPage() {
             />
           </div>
 
+          <div
+            className="login-form-group"
+            style={{ textAlign: 'right', marginTop: '-10px' }}
+          >
+            <Link
+              to="/forgot-password"
+              style={{ fontSize: '14px', color: '#007bff' }}
+            >
+              Forgot Password?
+            </Link>
+          </div>
+
           <button
             type="submit"
             className={`login-submit-btn ${loading ? 'loading' : ''}`}
