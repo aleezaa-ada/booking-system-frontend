@@ -18,7 +18,6 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          {/* Protected routes, will redirect to login page if not logged in*/}
           <Route
             path="/bookings"
             element={

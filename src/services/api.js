@@ -9,7 +9,6 @@ const api = axios.create({
   },
 });
 
-// request interceptor to include the token in headers
 api.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token');

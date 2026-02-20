@@ -20,7 +20,7 @@ function RegisterPage() {
     try {
       const result = await register(username, email, password);
       if (result.success) {
-        navigate('/login'); // Redirect to login after successful registration
+        navigate('/login');
       } else {
         setError(
           result.error ||

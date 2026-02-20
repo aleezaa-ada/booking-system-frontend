@@ -81,7 +81,6 @@ function ResourceListPage() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
-    // Clear error for this field
     if (formErrors[name]) {
       setFormErrors(prev => ({ ...prev, [name]: null }));
     }
@@ -109,7 +108,6 @@ function ResourceListPage() {
     setSubmitting(true);
     try {
       if (editingResource) {
-        // Update existing resource
         await api.put(`/resources/${editingResource.id}/`, formData);
         setResources(prev =>
           prev.map(r =>
@@ -118,7 +116,6 @@ function ResourceListPage() {
         );
         alert('Resource updated successfully!');
       } else {
-        // Create new resource
         const response = await api.post('/resources/', formData);
         setResources(prev => [...prev, response.data]);
         alert('Resource created successfully!');

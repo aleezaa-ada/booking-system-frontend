@@ -4,23 +4,21 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../assets/components.css';
 import api from '../services/api';
-import { useAuth } from '../hooks/useAuth';
 
 function BookingForm({ onSuccess }) {
   const { resourceId: urlResourceId, bookingId } = useParams();
   const resourceId = urlResourceId ? parseInt(urlResourceId) : null;
   const isEditMode = !!bookingId;
-  const { user } = useAuth(); // Get user from auth context
 
   const [resources, setResources] = useState([]);
   const [selectedResourceId, setSelectedResourceId] = useState(
     resourceId || ''
   );
-  const [resourceName, setResourceName] = useState(''); // For displaying resource name when editing
+  const [resourceName, setResourceName] = useState('');
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [notes, setNotes] = useState('');
-  const [status, setStatus] = useState('pending'); // Booking status
+  const [status, setStatus] = useState('pending');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -29,13 +27,6 @@ function BookingForm({ onSuccess }) {
 
   const navigate = useNavigate();
 
-  // Check if user is admin directly from context
-  const isAdmin = user?.is_staff || false;
-
-  console.log('👤 Current user from context:', user);
-  console.log('🔑 Is admin:', isAdmin);
-  console.log('✅ Status editing enabled for all users - Version 2.0');
-
   useEffect(() => {
     const fetchBooking = async () => {
       try {
@@ -43,13 +34,11 @@ function BookingForm({ onSuccess }) {
         const response = await api.get(`/bookings/${bookingId}/`);
         const booking = response.data;
 
-        // Pre-populate form with existing booking data
         setSelectedResourceId(booking.resource);
         setResourceName(
           booking.resource_name || `Resource ${booking.resource}`
         );
 
-        // Convert ISO strings to Date objects for DatePicker
         setStartTime(booking.start_time ? new Date(booking.start_time) : null);
         setEndTime(booking.end_time ? new Date(booking.end_time) : null);
         setNotes(booking.notes || '');
@@ -66,7 +55,6 @@ function BookingForm({ onSuccess }) {
       try {
         setFetchingResources(true);
         const response = await api.get('/resources/');
-        // Filter only available resources
         const availableResources = response.data.filter(r => r.is_available);
         setResources(availableResources);
       } catch (err) {
@@ -77,11 +65,9 @@ function BookingForm({ onSuccess }) {
       }
     };
 
-    // Fetch existing booking data if in edit mode
     if (isEditMode) {
       fetchBooking();
     } else if (!resourceId) {
-      // Only fetch resources if not editing and resourceId is not pre-selected
       fetchResources();
     }
   }, [bookingId, resourceId, isEditMode]);
@@ -105,7 +91,6 @@ function BookingForm({ onSuccess }) {
       return false;
     }
 
-    // Only validate past time for new bookings, not when editing
     if (!isEditMode && startTime < new Date()) {
       setError('Start time cannot be in the past');
       return false;
@@ -132,7 +117,6 @@ function BookingForm({ onSuccess }) {
         notes: notes.trim(),
       };
 
-      // Include status when editing
       if (isEditMode) {
         bookingData.status = status;
       }
@@ -141,16 +125,13 @@ function BookingForm({ onSuccess }) {
       console.log('📝 Status being sent:', status);
 
       if (isEditMode) {
-        // Update existing booking
         const response = await api.put(`/bookings/${bookingId}/`, bookingData);
         console.log('✅ API Response:', response.data);
         setSuccess(true);
       } else {
-        // Create new booking
         await api.post('/bookings/', bookingData);
         setSuccess(true);
 
-        // Reset form only when creating
         if (!resourceId) {
           setSelectedResourceId('');
         }
@@ -159,11 +140,9 @@ function BookingForm({ onSuccess }) {
         setNotes('');
       }
 
-      // Call onSuccess callback if provided
       if (onSuccess) {
         onSuccess();
       } else {
-        // Navigate to bookings page after a short delay
         setTimeout(() => {
           navigate('/bookings');
         }, 2000);
@@ -171,32 +150,21 @@ function BookingForm({ onSuccess }) {
     } catch (err) {
       let errorMessage = '';
 
-      // Django Rest Framework returns validation errors in various formats
       if (err.response?.data) {
         const errorData = err.response.data;
 
-        // Check for non_field_errors (common DRF validation error format)
         if (
           errorData.non_field_errors &&
           Array.isArray(errorData.non_field_errors)
         ) {
           errorMessage = errorData.non_field_errors.join(' ');
-        }
-        // Check for detail field
-        else if (errorData.detail) {
+        } else if (errorData.detail) {
           errorMessage = errorData.detail;
-        }
-        // Check for message field
-        else if (errorData.message) {
+        } else if (errorData.message) {
           errorMessage = errorData.message;
-        }
-        // Check for error field
-        else if (errorData.error) {
+        } else if (errorData.error) {
           errorMessage = errorData.error;
-        }
-        // Check for field-specific errors
-        else if (typeof errorData === 'object') {
-          // Combine all field errors
+        } else if (typeof errorData === 'object') {
           const fieldErrors = Object.entries(errorData)
             .map(([field, errors]) => {
               if (Array.isArray(errors)) {
@@ -211,7 +179,6 @@ function BookingForm({ onSuccess }) {
         }
       }
 
-      // Fallback to generic message
       if (!errorMessage) {
         errorMessage = `Failed to ${isEditMode ? 'update' : 'create'} booking. Please try again.`;
       }

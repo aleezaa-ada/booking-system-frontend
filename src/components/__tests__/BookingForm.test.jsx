@@ -1046,23 +1046,6 @@ describe('BookingForm', () => {
   });
 
   describe('Console Logging', () => {
-    it('logs user and admin status', async () => {
-      api.get.mockResolvedValue({ data: mockResources });
-
-      renderWithRouter(<BookingForm />);
-
-      await waitFor(() => {
-        expect(console.log).toHaveBeenCalledWith(
-          '👤 Current user from context:',
-          expect.any(Object)
-        );
-        expect(console.log).toHaveBeenCalledWith(
-          '🔑 Is admin:',
-          expect.any(Boolean)
-        );
-      });
-    });
-
     it('logs error when fetching resources fails', async () => {
       const error = new Error('Network error');
       api.get.mockRejectedValue(error);

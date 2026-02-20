@@ -40,17 +40,14 @@ function BookingsPage() {
 
     try {
       setCancellingId(bookingId);
-      // Use DELETE to cancel the booking (removes it completely)
       await api.delete(`/bookings/${bookingId}/`);
 
-      // Remove from local state since it's deleted
       setBookings(bookings.filter(booking => booking.id !== bookingId));
 
       alert('Booking cancelled successfully!');
     } catch (err) {
       let errorMessage = 'Failed to cancel booking. ';
 
-      // Handle different error types
       if (err.response?.status === 403) {
         errorMessage =
           'You do not have permission to cancel this booking. Please contact an administrator.';
