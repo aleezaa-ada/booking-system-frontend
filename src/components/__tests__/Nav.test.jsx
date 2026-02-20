@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Nav from '../Nav';
 import * as useAuthHook from '../../hooks/useAuth';
@@ -8,6 +8,25 @@ import * as useAuthHook from '../../hooks/useAuth';
 jest.mock('../../hooks/useAuth', () => ({
   useAuth: jest.fn(),
 }));
+
+// Mock ProfilePictureUpload component
+jest.mock('../ProfilePictureUpload', () => {
+  return function MockProfilePictureUpload({
+    onClose,
+    onUpdate,
+    currentPicture,
+  }) {
+    return (
+      <div data-testid="profile-picture-modal">
+        <button onClick={() => onUpdate('https://example.com/new-pic.jpg')}>
+          Mock Update
+        </button>
+        <button onClick={onClose}>Mock Close</button>
+        <span>{currentPicture}</span>
+      </div>
+    );
+  };
+});
 
 // Helper function to render with router
 const renderWithRouter = (ui, { authValue } = {}) => {
@@ -73,6 +92,10 @@ describe('Nav Component', () => {
     it('renders the logout button when user is logged in', () => {
       renderWithRouter(<Nav />, { authValue: { user: mockUser } });
 
+      // Open dropdown first
+      const profileButton = screen.getByLabelText('Profile menu');
+      fireEvent.click(profileButton);
+
       const logoutButton = screen.getByText('Logout');
       expect(logoutButton).toBeInTheDocument();
       expect(logoutButton.tagName).toBe('BUTTON');
@@ -111,6 +134,10 @@ describe('Nav Component', () => {
         },
       });
 
+      // Open dropdown first
+      const profileButton = screen.getByLabelText('Profile menu');
+      fireEvent.click(profileButton);
+
       const logoutButton = screen.getByText('Logout');
       fireEvent.click(logoutButton);
 
@@ -120,8 +147,12 @@ describe('Nav Component', () => {
     it('logout button has correct CSS class', () => {
       renderWithRouter(<Nav />, { authValue: { user: mockUser } });
 
+      // Open dropdown first
+      const profileButton = screen.getByLabelText('Profile menu');
+      fireEvent.click(profileButton);
+
       const logoutButton = screen.getByText('Logout');
-      expect(logoutButton).toHaveClass('nav-logout-btn');
+      expect(logoutButton).toHaveClass('dropdown-item');
     });
   });
 
@@ -192,6 +223,10 @@ describe('Nav Component', () => {
     it('logout button is keyboard accessible', () => {
       renderWithRouter(<Nav />, { authValue: { user: mockUser } });
 
+      // Open dropdown first
+      const profileButton = screen.getByLabelText('Profile menu');
+      fireEvent.click(profileButton);
+
       const logoutButton = screen.getByText('Logout');
       expect(logoutButton).toBeEnabled();
       expect(logoutButton.tagName).toBe('BUTTON');
@@ -206,10 +241,14 @@ describe('Nav Component', () => {
 
       renderWithRouter(<Nav />, {
         authValue: {
-          user: { username: 'testuser' },
+          user: { username: 'testuser', email: 'test@example.com' },
           logout: undefined,
         },
       });
+
+      // Open dropdown first
+      const profileButton = screen.getByLabelText('Profile menu');
+      fireEvent.click(profileButton);
 
       const logoutButton = screen.getByText('Logout');
       expect(logoutButton).toBeInTheDocument();
@@ -251,10 +290,14 @@ describe('Nav Component', () => {
       const mockLogout = jest.fn();
       renderWithRouter(<Nav />, {
         authValue: {
-          user: { username: 'testuser' },
+          user: { username: 'testuser', email: 'test@example.com' },
           logout: mockLogout,
         },
       });
+
+      // Open dropdown
+      const profileButton = screen.getByLabelText('Profile menu');
+      fireEvent.click(profileButton);
 
       const logoutButton = screen.getByText('Logout');
       fireEvent.click(logoutButton);

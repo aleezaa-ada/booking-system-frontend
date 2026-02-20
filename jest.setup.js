@@ -28,3 +28,9 @@ const localStorageMock = {
   clear: jest.fn(),
 };
 global.localStorage = localStorageMock;
+
+// Mock environment variables for Vite
+process.env.VITE_API_URL = 'http://localhost:8000/api/';
+process.env.VITE_CLOUDINARY_CLOUD_NAME = 'test-cloud';
+process.env.VITE_CLOUDINARY_UPLOAD_PRESET = 'test-preset';
+
